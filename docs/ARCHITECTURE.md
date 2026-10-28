@@ -61,11 +61,12 @@ gulix-web/
 
 ## Componentes e páginas
 
-Há uma única página, `HomePage`. Ela compõe sete seções:
+Há uma única página, `HomePage`. Ela compõe oito seções:
 
 | Componente | Responsabilidade atual |
 | --- | --- |
-| `Hero` | Abertura, atalhos `#produtos` e `#ofertas`, e cartão do `highlightProduct` |
+| `Hero` | Abertura BUILD YOUR LEGACY, imagem de um PC gamer e atalhos `#produtos` e `#ofertas` |
+| `ChooseYourSide` | Dois painéis visuais, AMD Radeon e NVIDIA GeForce, sem rota nem filtro |
 | `CategorySection` | Grade visual de categorias |
 | `FeaturedProducts` | Filtro local e grade de todos os produtos de `catalog.ts` |
 | `OfferBanner` | Banner estático com atalho `#produtos` |
@@ -177,7 +178,7 @@ Quando a integração existir, o preço cobrável é `preco`. O carrinho e o ite
 
 ### Carrinho
 
-O carrinho é do servidor e pertence ao usuário. Incluir o mesmo produto soma a quantidade. Estoque disponível é validado na inclusão, na atualização e na criação do pedido. A home não chama essas operações. O botão `+` do hero e o ícone do cabeçalho não têm ação.
+O carrinho é do servidor e pertence ao usuário. Incluir o mesmo produto soma a quantidade. Estoque disponível é validado na inclusão, na atualização e na criação do pedido. A home não chama essas operações. O ícone do cabeçalho não tem ação.
 
 ### Endereços
 
@@ -238,7 +239,7 @@ O `README.md` informa que o Vite sobe em `http://localhost:5173`.
 | Sem favoritos e sem newsletter | Nenhum controller correspondente | Os controles atuais não devem ganhar persistência |
 | Pagamento limitado a cartão e boleto | `MetodoPagamento` | O checkout não oferece Pix |
 | Carrinho sem imagem | `ItemCarrinhoResponseDTO` | A página do carrinho mostra nome, preço e quantidade, salvo consulta adicional ao produto |
-| Cópia de “até 12x sem juros” | `AnnouncementBar`, `Hero` e `Benefits` | Texto de vitrine. A regra confirmada isenta juros só até 6 parcelas |
+| Cópia de “até 12x sem juros” | `AnnouncementBar` e `Benefits` | Texto de vitrine. A regra confirmada isenta juros só até 6 parcelas |
 
 ## Dependências externas
 

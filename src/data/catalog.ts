@@ -1,4 +1,3 @@
-import heroAria from "../assets/catalog/hero-aria.jpg";
 import bannerOfertas from "../assets/catalog/banner-ofertas.jpg";
 import catAcessorios from "../assets/catalog/cat-acessorios.jpg";
 import catAudio from "../assets/catalog/cat-audio.jpg";
@@ -152,7 +151,6 @@ export const categories = [
   },
 ];
 
-export const heroImage = heroAria;
 export const offerImage = bannerOfertas;
 
 export const rankingIds = ["aria", "type-75", "glide-pro", "pulse"];

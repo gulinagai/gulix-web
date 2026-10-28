@@ -13,7 +13,11 @@ describe("roteamento", () => {
   it("apresenta a home em /", () => {
     renderAt("/");
 
-    expect(screen.getByRole("heading", { name: /encontre o/i })).toBeTruthy();
+    const legacy = screen.getByRole("heading", { level: 1, name: /build your legacy/i });
+    const chooseSide = screen.getByRole("heading", { name: "Choose your side." });
+    expect(legacy.compareDocumentPosition(chooseSide) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const categories = screen.getByRole("heading", { name: "Explore por categoria" });
+    expect(chooseSide.compareDocumentPosition(categories) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Produtos em destaque" })).toBeTruthy();
   });
 
@@ -22,10 +26,10 @@ describe("roteamento", () => {
     renderAt("/endereco-inexistente");
 
     expect(screen.getByRole("heading", { name: "Página não encontrada" })).toBeTruthy();
-    expect(screen.queryByRole("heading", { name: /encontre o/i })).toBeNull();
+    expect(screen.queryByRole("heading", { name: /build your legacy/i })).toBeNull();
 
     await user.click(screen.getByRole("link", { name: "Voltar ao início" }));
 
-    expect(screen.getByRole("heading", { name: /encontre o/i })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /build your legacy/i })).toBeTruthy();
   });
 });
