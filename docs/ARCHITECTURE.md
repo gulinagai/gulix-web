@@ -85,7 +85,7 @@ O layout compartilhado está em `src/components/layout/`: `AnnouncementBar`, `He
 
 As rotas ficam em `src/routes/routes.tsx` e o `RouterProvider` em `src/routes/router.tsx`. `/` renderiza a home existente. Qualquer outro caminho renderiza a página 404, com link de volta para `/`.
 
-A navegação interna do cabeçalho e do rodapé continua em âncoras: `#inicio`, `#produtos`, `#categorias` e `#ofertas`. O cabeçalho marca “Início” com `aria-current="page"`. O menu móvel abre, fecha com Escape e devolve o foco operacional ao fechar o painel. Busca, conta e carrinho não navegam e não alteram dados.
+A navegação principal do cabeçalho, em `Header` e `CategoryMenu`, segue a ordem Início, Categorias, Produtos e Monte seu PC. Início usa `NavLink` para `/` e recebe `aria-current="page"` nessa rota. Categorias abre um submenu com os nomes de `catalog.ts` — Tecnologia, Áudio, Games, Casa e decoração e Acessórios — sem consultar a API e sem rota própria. Produtos continua na âncora `#produtos`. Monte seu PC não possui destino. O menu móvel abre pelo botão existente, fecha com Escape e recolhe o submenu antes de fechar o painel quando ele está aberto. Busca, conta e carrinho permanecem sem navegação de negócio. O rodapé ainda usa as âncoras anteriores, inclusive Ofertas.
 
 ### Decisão planejada
 

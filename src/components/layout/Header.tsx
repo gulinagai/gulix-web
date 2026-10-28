@@ -1,14 +1,20 @@
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { NavLink } from "react-router";
+import { categories } from "../../data/catalog.ts";
+import { CategoryMenu } from "./CategoryMenu.tsx";
 import { Container } from "./Container.tsx";
 import { Wordmark } from "./Wordmark.tsx";
 
-const navItems = [
-  { href: "#inicio", label: "Início" },
-  { href: "#produtos", label: "Produtos" },
-  { href: "#categorias", label: "Categorias" },
-  { href: "#ofertas", label: "Ofertas" },
-];
+const categoryNavItems = categories.map((category) => ({
+  id: category.id,
+  name: category.name,
+}));
+
+/** Âncora da vitrine atual. A rota do catálogo substitui este destino quando existir. */
+const productsHref = "#produtos";
+
+const linkClassName = "text-sm font-medium text-ink/80 hover:text-ink";
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -28,6 +34,10 @@ export function Header() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [menuOpen]);
 
+  function closeMobileMenu() {
+    setMenuOpen(false);
+  }
+
   return (
     <header id="inicio" className="sticky top-0 z-30 border-b border-line bg-page">
       <Container className="flex h-16 items-center gap-6 lg:h-[4.5rem] lg:gap-8">
@@ -37,25 +47,35 @@ export function Header() {
 
         <nav aria-label="Principal" className="hidden lg:block">
           <ul className="flex items-center gap-7">
-            {navItems.map((item) => {
-              const current = item.href === "#inicio";
-              return (
-                <li key={item.href}>
-                  <a
-                    href={item.href}
-                    aria-current={current ? "page" : undefined}
-                    className={`relative text-sm font-medium ${
-                      current ? "text-ink" : "text-ink/80 hover:text-ink"
-                    }`}
-                  >
-                    {item.label}
-                    {current ? (
+            <li>
+              <NavLink
+                to="/"
+                end
+                className={({ isActive }) =>
+                  `relative text-sm font-medium ${isActive ? "text-ink" : "text-ink/80 hover:text-ink"}`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    Início
+                    {isActive ? (
                       <span className="absolute -bottom-2 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-brand" />
                     ) : null}
-                  </a>
-                </li>
-              );
-            })}
+                  </>
+                )}
+              </NavLink>
+            </li>
+            <CategoryMenu layout="bar" items={categoryNavItems} />
+            <li>
+              <a href={productsHref} className={linkClassName}>
+                Produtos
+              </a>
+            </li>
+            <li>
+              <button type="button" className={linkClassName}>
+                Monte seu PC
+              </button>
+            </li>
           </ul>
         </nav>
 
@@ -123,17 +143,40 @@ export function Header() {
           className={menuOpen ? "mt-2 border-t border-line pt-2" : "hidden"}
         >
           <ul>
-            {navItems.map((item) => (
-              <li key={item.href}>
-                <a
-                  href={item.href}
-                  className="flex min-h-11 items-center text-sm font-medium text-ink"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
+            <li>
+              <NavLink
+                to="/"
+                end
+                className="flex min-h-11 items-center text-sm font-medium text-ink"
+                onClick={closeMobileMenu}
+              >
+                Início
+              </NavLink>
+            </li>
+            <CategoryMenu
+              key={menuOpen ? "aberto" : "fechado"}
+              layout="panel"
+              items={categoryNavItems}
+              onNavigate={closeMobileMenu}
+            />
+            <li>
+              <a
+                href={productsHref}
+                className="flex min-h-11 items-center text-sm font-medium text-ink"
+                onClick={closeMobileMenu}
+              >
+                Produtos
+              </a>
+            </li>
+            <li>
+              <button
+                type="button"
+                className="flex min-h-11 items-center text-sm font-medium text-ink"
+                onClick={closeMobileMenu}
+              >
+                Monte seu PC
+              </button>
+            </li>
           </ul>
         </nav>
       </Container>
