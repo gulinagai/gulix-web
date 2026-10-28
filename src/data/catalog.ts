@@ -1,8 +1,15 @@
 import bannerOfertas from "../assets/catalog/banner-ofertas.jpg";
 import catAcessorios from "../assets/catalog/cat-acessorios.jpg";
+import catArmazenamento from "../assets/catalog/cat-armazenamento.jpg";
 import catAudio from "../assets/catalog/cat-audio.jpg";
 import catCasa from "../assets/catalog/cat-casa.jpg";
+import catFonte from "../assets/catalog/cat-fonte.jpg";
+import catGabinete from "../assets/catalog/cat-gabinete.jpg";
 import catGames from "../assets/catalog/cat-games.jpg";
+import catMemoria from "../assets/catalog/cat-memoria.jpg";
+import catPlacaDeVideo from "../assets/catalog/cat-placa-de-video.jpg";
+import catPlacaMae from "../assets/catalog/cat-placa-mae.jpg";
+import catProcessador from "../assets/catalog/cat-processador.jpg";
 import catTecnologia from "../assets/catalog/cat-tecnologia.jpg";
 import prodAria from "../assets/catalog/prod-aria.jpg";
 import prodBuds from "../assets/catalog/prod-buds.jpg";
@@ -148,6 +155,51 @@ export const categories = [
     description: "Detalhes que completam",
     count: "4 ITENS",
     image: catAcessorios,
+  },
+];
+
+export const hardwareCategories = [
+  {
+    id: "gabinete",
+    name: "Gabinete",
+    description: "O corpo do setup",
+    image: catGabinete,
+  },
+  {
+    id: "placa-de-video",
+    name: "Placa de Vídeo",
+    description: "A imagem do jogo",
+    image: catPlacaDeVideo,
+  },
+  {
+    id: "placa-mae",
+    name: "Placa-mãe",
+    description: "A base da máquina",
+    image: catPlacaMae,
+  },
+  {
+    id: "processador",
+    name: "Processador",
+    description: "O ritmo da máquina",
+    image: catProcessador,
+  },
+  {
+    id: "memoria-ram",
+    name: "Memória RAM",
+    description: "Folga para jogar",
+    image: catMemoria,
+  },
+  {
+    id: "fonte",
+    name: "Fonte",
+    description: "Energia estável",
+    image: catFonte,
+  },
+  {
+    id: "armazenamento",
+    name: "Armazenamento",
+    description: "Onde tudo fica",
+    image: catArmazenamento,
   },
 ];
 

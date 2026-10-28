@@ -67,7 +67,7 @@ Há uma única página, `HomePage`. Ela compõe oito seções:
 | --- | --- |
 | `Hero` | Abertura BUILD YOUR LEGACY, imagem de um PC gamer e atalhos `#produtos` e `#ofertas` |
 | `ChooseYourSide` | Dois painéis visuais, AMD Radeon e NVIDIA GeForce, sem rota nem filtro |
-| `CategorySection` | Grade visual de categorias |
+| `CategorySection` | Sete cards de hardware, sem selo de contagem e sem rota |
 | `FeaturedProducts` | Filtro local e grade de todos os produtos de `catalog.ts` |
 | `OfferBanner` | Banner estático com atalho `#produtos` |
 | `BestSellers` | Grade ordenada por `rankingIds` |
@@ -86,7 +86,7 @@ O layout compartilhado está em `src/components/layout/`: `AnnouncementBar`, `He
 
 As rotas ficam em `src/routes/routes.tsx` e o `RouterProvider` em `src/routes/router.tsx`. `/` renderiza a home existente. Qualquer outro caminho renderiza a página 404, com link de volta para `/`.
 
-A navegação principal do cabeçalho, em `Header` e `CategoryMenu`, segue a ordem Início, Categorias, Produtos e Monte seu PC. Início usa `NavLink` para `/` e recebe `aria-current="page"` nessa rota. Categorias abre um submenu com os nomes de `catalog.ts` — Tecnologia, Áudio, Games, Casa e decoração e Acessórios — sem consultar a API e sem rota própria. Produtos continua na âncora `#produtos`. Monte seu PC não possui destino. O menu móvel abre pelo botão existente, fecha com Escape e recolhe o submenu antes de fechar o painel quando ele está aberto. Busca, conta e carrinho permanecem sem navegação de negócio. O rodapé ainda usa as âncoras anteriores, inclusive Ofertas.
+A navegação principal do cabeçalho, em `Header` e `CategoryMenu`, segue a ordem Início, Categorias, Produtos e Monte seu PC. Início usa `NavLink` para `/` e recebe `aria-current="page"` nessa rota. Categorias abre um submenu com os nomes de `categories` em `catalog.ts` — Tecnologia, Áudio, Games, Casa e decoração e Acessórios — sem consultar a API e sem rota própria. A grade da home usa a lista separada `hardwareCategories`. Produtos continua na âncora `#produtos`. Monte seu PC não possui destino. O menu móvel abre pelo botão existente, fecha com Escape e recolhe o submenu antes de fechar o painel quando ele está aberto. Busca, conta e carrinho permanecem sem navegação de negócio. O rodapé ainda usa as âncoras anteriores, inclusive Ofertas.
 
 ### Decisão planejada
 
@@ -172,7 +172,7 @@ Senha de cadastro e de atualização: mínimo de 8 caracteres, com maiúscula, m
 
 ### Catálogo
 
-A home exibe oito produtos locais, com preço, comparação, parcela e selo já montados em texto. As categorias locais incluem imagem, descrição e um texto de contagem. Essa contagem não acompanha a lista: Tecnologia informa `4 ITENS` e há dois produtos dessa categoria; Acessórios informa `4 ITENS` e há um produto.
+A home exibe oito produtos locais, com preço, comparação, parcela e selo já montados em texto. `categories` ainda guarda as cinco categorias do submenu, com imagem, descrição e um texto de contagem. Essa contagem não acompanha a lista: Tecnologia informa `4 ITENS` e há dois produtos dessa categoria; Acessórios informa `4 ITENS` e há um produto. A seção Explore por categoria não usa esse texto. Ela lê `hardwareCategories`: Gabinete, Placa de Vídeo, Placa-mãe, Processador, Memória RAM, Fonte e Armazenamento.
 
 Quando a integração existir, o preço cobrável é `preco`. O carrinho e o item do pedido usam `produto.preco`. O campo `desconto` não entra nesse cálculo. `imagemURL` está documentado no DTO como nome de arquivo ou URL, e não há endpoint de mídia. `destaque` seleciona produtos no cliente. Marcas entram como filtro da listagem. A página de detalhe usa o `id` numérico.
 

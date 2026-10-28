@@ -18,6 +18,17 @@ describe("roteamento", () => {
     expect(legacy.compareDocumentPosition(chooseSide) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     const categories = screen.getByRole("heading", { name: "Explore por categoria" });
     expect(chooseSide.compareDocumentPosition(categories) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    for (const name of [
+      "Gabinete",
+      "Placa de Vídeo",
+      "Placa-mãe",
+      "Processador",
+      "Memória RAM",
+      "Fonte",
+      "Armazenamento",
+    ]) {
+      expect(screen.getByRole("heading", { name })).toBeTruthy();
+    }
     expect(screen.getByRole("heading", { name: "Produtos em destaque" })).toBeTruthy();
   });
 
