@@ -18,9 +18,12 @@ O painel administrativo não faz parte deste frontend. O backend expõe operaç�
 | Tailwind CSS 4 | Instalada | Estilos, via `@tailwindcss/vite` |
 | lucide-react | Instalada | Ícones |
 | oxlint | Instalada | `npm run lint` |
+| React Router 7 | Instalada | Rotas `/` e `*` |
+| Vitest | Instalada | `npm run test` |
+| Testing Library | Instalada | Testes de componente com jsdom |
 | Node.js 22 ou superior | Exigida pelo `README.md` | Ambiente local |
 
-Não estão instalados roteador, cliente HTTP de terceiros, biblioteca de estado, executor de testes nem ferramenta de teste de ponta a ponta. A inclusão de React Router e de Vitest com Testing Library está planejada nas tarefas de `app-foundation`. O cliente HTTP planejado usa `fetch`.
+Não há cliente HTTP de terceiros, biblioteca de estado nem teste de ponta a ponta. O cliente da API usa `fetch`.
 
 Fontes Inter e Newsreader são carregadas no `index.html` a partir do Google Fonts. Os tokens visuais ficam em `src/index.css`, no bloco `@theme`.
 
@@ -31,14 +34,18 @@ gulix-web/
 ├── index.html
 ├── package.json
 ├── vite.config.ts
+├── .env.example
 ├── README.md
 ├── docs/
 └── src/
     ├── main.tsx
     ├── App.tsx
     ├── index.css
+    ├── lib/http/
+    ├── routes/
     ├── pages/
-    │   └── HomePage.tsx
+    │   ├── HomePage.tsx
+    │   └── NotFoundPage.tsx
     ├── components/
     │   ├── layout/
     │   └── home/
@@ -48,7 +55,7 @@ gulix-web/
     └── assets/
 ```
 
-`main.tsx` monta `App` em modo estrito. `App` renderiza, nesta ordem, `AnnouncementBar`, o link de pular para `#conteudo`, `Header`, `HomePage` e `Footer`. Não há providers, rotas nem chamadas de rede.
+`main.tsx` monta `App` em modo estrito. `App` entrega o roteador. O layout compartilhado fica em `AppShell`: `AnnouncementBar`, o link de pular para `#conteudo`, `Header`, a rota ativa e `Footer`. A home continua sendo a rota `/`. A rota `*` renderiza `NotFoundPage`.
 
 `vite.config.ts` registra os plugins do React e do Tailwind. Não há proxy para o backend.
 
@@ -76,23 +83,25 @@ O layout compartilhado está em `src/components/layout/`: `AnnouncementBar`, `He
 
 ### Estado atual
 
-Não há roteador. A navegação do cabeçalho e do rodapé usa âncoras: `#inicio`, `#produtos`, `#categorias` e `#ofertas`. O cabeçalho marca “Início” com `aria-current="page"`. O menu móvel abre, fecha com Escape e devolve o foco operacional ao fechar o painel. Busca, conta e carrinho não navegam e não alteram dados.
+As rotas ficam em `src/routes/routes.tsx` e o `RouterProvider` em `src/routes/router.tsx`. `/` renderiza a home existente. Qualquer outro caminho renderiza a página 404, com link de volta para `/`.
+
+A navegação interna do cabeçalho e do rodapé continua em âncoras: `#inicio`, `#produtos`, `#categorias` e `#ofertas`. O cabeçalho marca “Início” com `aria-current="page"`. O menu móvel abre, fecha com Escape e devolve o foco operacional ao fechar o painel. Busca, conta e carrinho não navegam e não alteram dados.
 
 ### Decisão planejada
 
-`FE-001` introduz rotas da aplicação e mantém a home em `/`. As páginas de catálogo, detalhe, autenticação, carrinho, conta, endereços, checkout e pedidos entram nas tarefas das features correspondentes. A refatoração da home não cria essas rotas.
+As páginas de catálogo, detalhe, autenticação, carrinho, conta, endereços, checkout e pedidos entram nas tarefas das features correspondentes, como novos objetos em `appRoutes`. A refatoração da home não cria essas rotas.
 
 ## Comunicação com o backend
 
 ### Estado atual
 
-O frontend não possui URL de API, cliente HTTP, interceptação de erro nem envio de token. Nenhuma tela consome o backend. A classe `CorsConfig` do backend está vazia, então a comunicação pelo navegador não está habilitada no código do servidor.
+`createApiClient` em `src/lib/http/client.ts` monta as URLs a partir de `VITE_API_BASE_URL`, aceita `GET`, `POST`, `PUT`, `PATCH` e `DELETE`, anexa `Authorization: Bearer` somente quando recebe `token` e lê corpo vazio, inclusive `204`. Nenhuma tela chama esse cliente ainda. A classe `CorsConfig` do backend está vazia, então a comunicação pelo navegador não está habilitada no código do servidor.
 
 O backend usado como contrato é uma API stateless, com prefixo `/api/v1`, JWT no header `Authorization` e sessão sem estado no servidor. A documentação OpenAPI e o Swagger UI são públicos. Isso não substitui a leitura dos controllers e dos DTOs.
 
 ### Decisão planejada
 
-`FE-002` cria um cliente com `fetch`, a URL base em variável de ambiente e a leitura de `ErrorResponseDTO` e `ValidationErrorResponseDTO`. O cliente recebe um token quando a sessão existir. Ele não será considerado validado no navegador enquanto o CORS não permitir a origem do Vite.
+O armazenamento da sessão entra na feature `auth`. O cliente já está pronto para receber o token, sem guardá-lo. Ele não será considerado validado no navegador enquanto o CORS não permitir a origem do Vite.
 
 ## Contratos relevantes
 
@@ -142,7 +151,7 @@ Exigem papel `USER`, salvo observação em contrário.
 
 ### Erros
 
-`ErrorResponseDTO` contém `timestamp`, `status`, `error`, `message` e `path`. `ValidationErrorResponseDTO` acrescenta `fields`, um mapa de campo para mensagem. O cliente planejado precisa preservar os dois formatos.
+`ErrorResponseDTO` contém `timestamp`, `status`, `error`, `message` e `path`. `ValidationErrorResponseDTO` acrescenta `fields`, um mapa de campo para mensagem. `ApiError` preserva esses campos quando o JSON corresponde ao contrato. Corpo vazio, JSON inválido, formato inesperado e falha de rede ficam distinguíveis por `kind`, sem substituir `message` quando a API a envia.
 
 ## Autenticação e sessão
 
@@ -196,7 +205,7 @@ Formulários futuros devem mostrar `message` e, quando existir, `fields`. Isso v
 
 ## Variáveis de ambiente
 
-O frontend não lê variáveis de ambiente. A variável planejada para a URL da API é `VITE_API_BASE_URL`. Segredos do backend — banco, `JWT_SECRET`, Stripe e OpenRouteService — não entram no frontend.
+A URL da API é `VITE_API_BASE_URL`, documentada em `.env.example`. O arquivo `.env` fica fora do Git. Segredos do backend — banco, `JWT_SECRET`, Stripe e OpenRouteService — não entram no frontend.
 
 O `README.md` informa que o Vite sobe em `http://localhost:5173`.
 

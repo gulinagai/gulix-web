@@ -86,20 +86,21 @@ O `package.json` expõe:
 
 ```bash
 npm run lint
+npm run test
 npm run build
 npm run dev
 npm run preview
 ```
 
-`lint` executa o oxlint. `build` executa `tsc -b` e o build do Vite. Não há script `test`. Não há Vitest, Testing Library, Playwright nem workflow de CI no repositório. Nenhum teste automatizado foi executado durante a escrita desta documentação.
+`lint` executa o oxlint. `test` executa o Vitest uma vez, com jsdom e Testing Library. `build` executa `tsc -b` e o build do Vite. Não há Playwright nem workflow de CI no repositório.
 
 ### Planejado
 
-Vitest e Testing Library entram em `FE-002`, junto com o cliente HTTP. A partir dessa tarefa, código novo de cliente, formulário e estado de tela leva teste automatizado.
+Código novo de cliente, formulário e estado de tela leva teste automatizado. Os testes do cliente HTTP e do roteamento inicial usam respostas simuladas e não dependem do backend em execução.
 
 | Alvo | Forma prevista | A partir de |
 | --- | --- | --- |
-| Cliente HTTP e mapeamento de erro | Teste unitário com resposta simulada | FE-002 |
+| Cliente HTTP e mapeamento de erro | Teste unitário com resposta simulada | Implementado em `src/lib/http/client.test.ts` |
 | Listagem, filtros e paginação | Teste do módulo de consulta e da página | FE-004 e FE-005 |
 | Formulários de login, cadastro, perfil, endereço e checkout | Teste de componente com campos inválidos e mensagem da API | FE-010 em diante |
 | Sessão e rota protegida | Teste de armazenamento, renovação, logout e redirecionamento | FE-009 e FE-011 |
@@ -119,11 +120,11 @@ Uma tarefa está concluída quando:
 1. O escopo implementado é o do roadmap, sem a tarefa vizinha.
 2. Os critérios de aceite da tarefa foram verificados.
 3. `npm run lint` e `npm run build` passam.
-4. Os testes automatizados da tarefa passam, a partir do momento em que `FE-002` os introduzir.
+4. `npm run test` passa.
 5. A revisão confere que segredos não foram adicionados.
 6. A branch foi integrada na branch padrão por pull request.
 
-Para `FE-001` e `FE-021`, que acontecem antes do executor de testes, lint, build e a revisão manual descrita no roadmap são a validação. `FE-021` também exige a conferência visual da home em viewport estreita e larga.
+`FE-021` também exige a conferência visual da home em viewport estreita e larga. `FE-001` e o cliente HTTP passam por `npm run test`, além de lint e build.
 
 Chamar a API no navegador e observar a resposta não é obrigatório para concluir a tarefa enquanto o CORS não estiver resolvido. Quando essa chamada for feita, o resultado deve ser descrito como integração verificada. Até lá, o resultado dos testes simulados deve ser descrito como validação local.
 

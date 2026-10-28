@@ -21,5 +21,8 @@ A aplicação sobe em `http://localhost:5173`.
 
 ```bash
 npm run lint
+npm run test
 npm run build
 ```
+
+Copie `.env.example` para `.env` quando for chamar a API. A variável é `VITE_API_BASE_URL`. O CORS do backend ainda não libera o navegador.
