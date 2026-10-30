@@ -86,17 +86,17 @@ O layout compartilhado está em `src/components/layout/`: `AnnouncementBar`, `He
 
 As rotas ficam em `src/routes/routes.tsx` e o `RouterProvider` em `src/routes/router.tsx`. `/` renderiza a home existente. Qualquer outro caminho renderiza a página 404, com link de volta para `/`.
 
-A navegação principal do cabeçalho, em `Header` e `CategoryMenu`, segue a ordem Início, Categorias, Produtos e Monte seu PC. Início usa `NavLink` para `/` e recebe `aria-current="page"` nessa rota. Categorias abre um submenu com os nomes de `categories` em `catalog.ts` — Tecnologia, Áudio, Games, Casa e decoração e Acessórios — sem consultar a API e sem rota própria. A grade da home usa a lista separada `hardwareCategories`. Produtos continua na âncora `#produtos`. Monte seu PC não possui destino. O menu móvel abre pelo botão existente, fecha com Escape e recolhe o submenu antes de fechar o painel quando ele está aberto. Busca, conta e carrinho permanecem sem navegação de negócio. O rodapé ainda usa as âncoras anteriores, inclusive Ofertas.
+A navegação principal do cabeçalho, em `Header` e `CategoryMenu`, segue a ordem Início, Categorias, Produtos e Monte seu PC. Início usa `NavLink` para `/` e recebe `aria-current="page"` nessa rota. Categorias abre um submenu com os nomes de `categories` em `catalog.ts` — Tecnologia, Áudio, Games, Casa e decoração e Acessórios — sem consultar a API e sem rota própria. A grade da home usa a lista separada `hardwareCategories`. Produtos usa `NavLink` para `/produtos`. Monte seu PC não possui destino. O menu móvel abre pelo botão existente, fecha com Escape e recolhe o submenu antes de fechar o painel quando ele está aberto. Busca, conta e carrinho permanecem sem navegação de negócio. O rodapé ainda usa as âncoras anteriores, inclusive Ofertas.
 
 ### Decisão planejada
 
-As páginas de catálogo, detalhe, autenticação, carrinho, conta, endereços, checkout e pedidos entram nas tarefas das features correspondentes, como novos objetos em `appRoutes`. A refatoração da home não cria essas rotas.
+A listagem do catálogo está em `/produtos`. Detalhe, autenticação, carrinho, conta, endereços, checkout e pedidos entram nas tarefas das features correspondentes, como novos objetos em `appRoutes`.
 
 ## Comunicação com o backend
 
 ### Estado atual
 
-`createApiClient` em `src/lib/http/client.ts` monta as URLs a partir de `VITE_API_BASE_URL`, aceita `GET`, `POST`, `PUT`, `PATCH` e `DELETE`, anexa `Authorization: Bearer` somente quando recebe `token` e lê corpo vazio, inclusive `204`. Nenhuma tela chama esse cliente ainda. A classe `CorsConfig` do backend está vazia, então a comunicação pelo navegador não está habilitada no código do servidor.
+`createApiClient` em `src/lib/http/client.ts` monta as URLs a partir de `VITE_API_BASE_URL`, aceita `GET`, `POST`, `PUT`, `PATCH` e `DELETE`, anexa `Authorization: Bearer` somente quando recebe `token` e lê corpo vazio, inclusive `204`. A página `/produtos` consulta `GET /api/v1/produtos`, `GET /api/v1/categorias` e `GET /api/v1/marcas`. A classe `CorsConfig` do backend está vazia, então essa comunicação pelo navegador não está habilitada no código do servidor.
 
 O backend usado como contrato é uma API stateless, com prefixo `/api/v1`, JWT no header `Authorization` e sessão sem estado no servidor. A documentação OpenAPI e o Swagger UI são públicos. Isso não substitui a leitura dos controllers e dos DTOs.
 

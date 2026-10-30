@@ -20,17 +20,10 @@ import prodSpeaker from "../assets/catalog/prod-speaker.jpg";
 import prodTeclado from "../assets/catalog/prod-teclado.jpg";
 import prodWatch from "../assets/catalog/prod-watch.jpg";
 
-export type ProductCategory =
-  | "Tecnologia"
-  | "Áudio"
-  | "Games"
-  | "Casa e decoração"
-  | "Acessórios";
-
 export type Product = {
   id: string;
   name: string;
-  category: ProductCategory;
+  category: string;
   price: string;
   compareAt?: string;
   installment?: string;

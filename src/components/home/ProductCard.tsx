@@ -9,11 +9,11 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <article>
       <div className="relative overflow-hidden rounded-2xl bg-paper shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]">
-        <img
-          src={product.image}
-          alt=""
-          className="aspect-square w-full object-cover"
-        />
+        {product.image ? (
+          <img src={product.image} alt="" className="aspect-square w-full object-cover" />
+        ) : (
+          <div className="aspect-square w-full bg-shelf" />
+        )}
         {product.badge ? (
           <span className="absolute top-3 left-3 rounded-md bg-action px-2 py-1 text-[11px] font-semibold tracking-wide text-white">
             {product.badge}

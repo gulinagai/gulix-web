@@ -41,7 +41,7 @@ describe("navegação do cabeçalho", () => {
     expect(itemLabels(desktop)).toEqual(expected);
     expect(itemLabels(mobile)).toEqual(expected);
     expect(desktop.querySelector('a[href="/"]')?.textContent).toBe("Início");
-    expect(desktop.querySelector('a[href="#produtos"]')?.textContent).toBe("Produtos");
+    expect(desktop.querySelector('a[href="/produtos"]')?.textContent).toBe("Produtos");
     expect(screen.getAllByRole("button", { name: "Monte seu PC" })).toHaveLength(2);
   });
 

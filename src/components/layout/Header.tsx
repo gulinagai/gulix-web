@@ -11,9 +11,6 @@ const categoryNavItems = categories.map((category) => ({
   name: category.name,
 }));
 
-/** Âncora da vitrine atual. A rota do catálogo substitui este destino quando existir. */
-const productsHref = "#produtos";
-
 const linkClassName = "text-sm font-medium text-ink/80 hover:text-ink";
 
 export function Header() {
@@ -67,9 +64,21 @@ export function Header() {
             </li>
             <CategoryMenu layout="bar" items={categoryNavItems} />
             <li>
-              <a href={productsHref} className={linkClassName}>
-                Produtos
-              </a>
+              <NavLink
+                to="/produtos"
+                className={({ isActive }) =>
+                  `relative text-sm font-medium ${isActive ? "text-ink" : "text-ink/80 hover:text-ink"}`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    Produtos
+                    {isActive ? (
+                      <span className="absolute -bottom-2 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-brand" />
+                    ) : null}
+                  </>
+                )}
+              </NavLink>
             </li>
             <li>
               <button type="button" className={linkClassName}>
@@ -160,13 +169,13 @@ export function Header() {
               onNavigate={closeMobileMenu}
             />
             <li>
-              <a
-                href={productsHref}
+              <NavLink
+                to="/produtos"
                 className="flex min-h-11 items-center text-sm font-medium text-ink"
                 onClick={closeMobileMenu}
               >
                 Produtos
-              </a>
+              </NavLink>
             </li>
             <li>
               <button
