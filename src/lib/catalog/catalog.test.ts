@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildProductQuery,
   clampPrice,
+  hasPromotionalPrice,
   isFullPriceRange,
   matchesPriceRange,
   normalizePriceRange,
@@ -52,6 +53,21 @@ describe("consulta do catálogo", () => {
     expect(matchesPriceRange({ preco: 2000, precoFinal: 1500 }, 1000, 1600)).toBe(true);
     expect(matchesPriceRange({ preco: 2000, precoFinal: 1500 }, 1600, 3000)).toBe(false);
     expect(matchesPriceRange({ preco: 900, precoFinal: null }, 0, 1000)).toBe(true);
+  });
+
+  it("mostra o preço original só em destaque com desconto promocional", () => {
+    expect(
+      hasPromotionalPrice({ preco: 999.9, precoFinal: 849.9, desconto: 15, destaque: true }),
+    ).toBe(true);
+    expect(
+      hasPromotionalPrice({ preco: 999.9, precoFinal: 849.9, desconto: 15, destaque: false }),
+    ).toBe(false);
+    expect(
+      hasPromotionalPrice({ preco: 350, precoFinal: 350, desconto: 0, destaque: true }),
+    ).toBe(false);
+    expect(
+      hasPromotionalPrice({ preco: 350, precoFinal: null, desconto: 0, destaque: false }),
+    ).toBe(false);
   });
 
   it("aceita só URL de imagem utilizável", () => {

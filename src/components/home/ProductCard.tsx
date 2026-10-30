@@ -40,12 +40,10 @@ export function ProductCard({ product }: ProductCardProps) {
           {product.category}
         </p>
         <h3 className="mt-1 line-clamp-2 text-[15px] leading-snug font-semibold text-ink">{product.name}</h3>
-        <p className="mt-2 flex min-w-0 flex-wrap items-baseline gap-x-2 text-lg font-bold tracking-tight text-ink">
-          <span>{product.price}</span>
-          {product.compareAt ? (
-            <span className="text-sm font-medium text-muted line-through">{product.compareAt}</span>
-          ) : null}
-        </p>
+        <p className="mt-2 text-lg font-bold tracking-tight text-ink">{product.price}</p>
+        {product.compareAt ? (
+          <p className="text-sm font-medium text-muted line-through">{product.compareAt}</p>
+        ) : null}
         {product.installment ? (
           <p className="mt-1 text-xs text-muted">{product.installment}</p>
         ) : null}

@@ -121,6 +121,18 @@ export function payablePrice(product: Pick<CatalogProduct, "preco" | "precoFinal
   return product.precoFinal ?? product.preco;
 }
 
+export function hasPromotionalPrice(
+  product: Pick<CatalogProduct, "preco" | "precoFinal" | "desconto" | "destaque">,
+): boolean {
+  return (
+    product.destaque === true &&
+    product.desconto != null &&
+    product.desconto > 0 &&
+    product.precoFinal != null &&
+    product.precoFinal < product.preco
+  );
+}
+
 export function matchesPriceRange(
   product: Pick<CatalogProduct, "preco" | "precoFinal">,
   min: number,

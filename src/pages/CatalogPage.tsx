@@ -14,6 +14,7 @@ import {
   emptyProductPage,
   formatDiscount,
   formatPrice,
+  hasPromotionalPrice,
   isFullPriceRange,
   matchesPriceRange,
   normalizePriceRange,
@@ -71,14 +72,14 @@ function parseSize(value: string | null): PageSize {
 
 function toCard(product: CatalogProduct, categories: CatalogRef[], imageBaseUrl?: string): Product {
   const current = payablePrice(product);
-  const discounted = product.precoFinal !== null && product.precoFinal < product.preco;
+  const promotional = hasPromotionalPrice(product);
 
   return {
     id: String(product.id),
     name: product.nome,
     category: categories.find((item) => item.id === product.categoriaId)?.nome ?? "",
     price: formatPrice(current),
-    compareAt: discounted ? formatPrice(product.preco) : undefined,
+    compareAt: promotional ? formatPrice(product.preco) : undefined,
     badge: product.desconto && product.desconto > 0 ? formatDiscount(product.desconto) : undefined,
     image: usableImage(product.imagemURL, imageBaseUrl),
   };

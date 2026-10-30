@@ -38,6 +38,17 @@ const productPage = {
       categoriaId: 4,
       marcaId: 8,
     },
+    {
+      id: 3,
+      nome: "Gabinete em destaque",
+      preco: 2000,
+      precoFinal: 1700,
+      desconto: 15,
+      destaque: true,
+      imagemURL: "gabinete.jpg",
+      categoriaId: 1,
+      marcaId: 8,
+    },
   ],
   totalElements: 12,
   totalPages: 2,
@@ -86,6 +97,15 @@ describe("catálogo", () => {
     expect(screen.getByRole("heading", { name: "Fonte 750W" })).toBeTruthy();
     expect(document.querySelector('img[src="https://cdn.exemplo/ram.jpg"]')).toBeTruthy();
     expect(document.querySelector('img[src="http://api.test/imagens/produtos/fonte.jpg"]')).toBeTruthy();
+    const sale = screen.getByText("R$ 1.700,00");
+    const original = screen.getByText("R$ 2.000,00");
+    expect(sale.className).toContain("font-bold");
+    expect(original.className).toContain("line-through");
+    expect(sale.compareDocumentPosition(original) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByText("R$ 450,00")).toBeTruthy();
+    expect(screen.queryByText("R$ 500,00")).toBeNull();
+    expect(screen.getByText("R$ 8.000,00")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Fonte 750W" }).closest("article")?.querySelector(".line-through")).toBeNull();
     expect(screen.getByText("12 produtos encontrados")).toBeTruthy();
     expect(screen.getByText("Página 1 de 2")).toBeTruthy();
     expect(screen.getByText("De R$ 49,90 até R$ 8.000,00")).toBeTruthy();
@@ -155,5 +175,77 @@ describe("catálogo", () => {
 
     await user.click(screen.getByRole("button", { name: "Limpar" }));
     expect(await screen.findByRole("heading", { name: "Memória DDR5" })).toBeTruthy();
+  });
+
+  it("filtra Placa de Vídeo, Placa mãe e as demais pelo id da API", async () => {
+    const categories = [
+      { id: 2, nome: "Placa de Vídeo" },
+      { id: 3, nome: "Placa mãe" },
+      { id: 1, nome: "Gabinete" },
+    ];
+    const products = [
+      { id: 7, nome: "Produto da categoria 3", preco: 5000, precoFinal: 5000, desconto: 0, destaque: false, imagemURL: "", categoriaId: 3, marcaId: 5 },
+      { id: 4, nome: "Produto da categoria 2", preco: 3000, precoFinal: 3000, desconto: 0, destaque: false, imagemURL: "", categoriaId: 2, marcaId: 5 },
+      { id: 1, nome: "Produto da categoria 1", preco: 600, precoFinal: 600, desconto: 0, destaque: false, imagemURL: "", categoriaId: 1, marcaId: 8 },
+    ];
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = new URL(String(input));
+
+      if (url.pathname.endsWith("/api/v1/produtos/faixa-precos")) {
+        return jsonResponse({ menorPreco: 49.9, maiorPreco: 8000 });
+      }
+
+      if (url.pathname.endsWith("/api/v1/categorias")) {
+        return jsonResponse(categories);
+      }
+
+      if (url.pathname.endsWith("/api/v1/marcas")) {
+        return jsonResponse([{ id: 5, nome: "AMD" }]);
+      }
+
+      const categoriaId = url.searchParams.get("categoriaId");
+      const marcaId = url.searchParams.get("marcaId");
+      const content = products.filter((product) => {
+        const categoryMatches = categoriaId == null || String(product.categoriaId) === categoriaId;
+        const brandMatches = marcaId == null || String(product.marcaId) === marcaId;
+        return categoryMatches && brandMatches;
+      });
+
+      return jsonResponse({
+        content,
+        totalElements: content.length,
+        totalPages: 1,
+        number: 0,
+        size: 10,
+      });
+    });
+    const user = userEvent.setup();
+    renderCatalog();
+
+    await screen.findByRole("heading", { name: "Produto da categoria 3" });
+    await user.click(screen.getByRole("checkbox", { name: "Placa de Vídeo" }));
+
+    await waitFor(() => {
+      const urls = fetchMock.mock.calls.map((call) => String(call[0]));
+      expect(urls.some((url) => url.includes("categoriaId=2"))).toBe(true);
+      expect(screen.getByRole("heading", { name: "Produto da categoria 2" })).toBeTruthy();
+      expect(screen.queryByRole("heading", { name: "Produto da categoria 3" })).toBeNull();
+    });
+
+    await user.click(screen.getByRole("checkbox", { name: "Placa mãe" }));
+    await waitFor(() => {
+      const urls = fetchMock.mock.calls.map((call) => String(call[0]));
+      expect(urls.some((url) => url.includes("categoriaId=3") && !url.includes("marcaId="))).toBe(true);
+      expect(screen.getByRole("heading", { name: "Produto da categoria 3" })).toBeTruthy();
+      expect(screen.queryByRole("heading", { name: "Produto da categoria 2" })).toBeNull();
+    });
+
+    await user.click(screen.getByRole("checkbox", { name: "Gabinete" }));
+    await user.click(screen.getByRole("checkbox", { name: "AMD" }));
+    await waitFor(() => {
+      const urls = fetchMock.mock.calls.map((call) => String(call[0]));
+      expect(urls.some((url) => url.includes("categoriaId=1") && url.includes("marcaId=5"))).toBe(true);
+      expect(screen.getByText("Nenhum produto encontrado com esses filtros.")).toBeTruthy();
+    });
   });
 });
