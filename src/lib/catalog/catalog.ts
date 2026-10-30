@@ -1,6 +1,3 @@
-export const PRICE_MIN = 0;
-export const PRICE_MAX = 20_000;
-
 export const PAGE_SIZES = [10, 20] as const;
 
 export type PageSize = (typeof PAGE_SIZES)[number];
@@ -39,6 +36,11 @@ export type ProductPage = {
   size: number;
 };
 
+export type PriceBounds = {
+  min: number;
+  max: number;
+};
+
 export type CatalogQuery = {
   page: number;
   size: PageSize;
@@ -69,22 +71,50 @@ export function buildProductQuery(query: CatalogQuery): Record<string, string | 
   return params;
 }
 
-export function clampPrice(value: number): number {
-  if (!Number.isFinite(value)) {
-    return PRICE_MIN;
-  }
-
-  return Math.min(PRICE_MAX, Math.max(PRICE_MIN, Math.round(value)));
+export function roundMoney(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
-export function normalizePriceRange(min: number, max: number): { min: number; max: number } {
-  const low = clampPrice(min);
-  const high = clampPrice(max);
+export function parsePriceBounds(payload: {
+  menorPreco?: unknown;
+  maiorPreco?: unknown;
+}): PriceBounds | undefined {
+  const min = moneyValue(payload.menorPreco);
+  const max = moneyValue(payload.maiorPreco);
+
+  if (min === undefined || max === undefined) {
+    return undefined;
+  }
+
+  return min <= max ? { min, max } : { min: max, max: min };
+}
+
+function moneyValue(value: unknown): number | undefined {
+  const parsed = typeof value === "number" ? value : typeof value === "string" ? Number(value) : Number.NaN;
+
+  if (!Number.isFinite(parsed)) {
+    return undefined;
+  }
+
+  return roundMoney(parsed);
+}
+
+export function clampPrice(value: number, bounds: PriceBounds): number {
+  if (!Number.isFinite(value)) {
+    return bounds.min;
+  }
+
+  return Math.min(bounds.max, Math.max(bounds.min, roundMoney(value)));
+}
+
+export function normalizePriceRange(min: number, max: number, bounds: PriceBounds): PriceBounds {
+  const low = clampPrice(min, bounds);
+  const high = clampPrice(max, bounds);
   return low <= high ? { min: low, max: high } : { min: high, max: low };
 }
 
-export function isFullPriceRange(min: number, max: number): boolean {
-  return min <= PRICE_MIN && max >= PRICE_MAX;
+export function isFullPriceRange(min: number, max: number, bounds: PriceBounds): boolean {
+  return min <= bounds.min && max >= bounds.max;
 }
 
 export function payablePrice(product: Pick<CatalogProduct, "preco" | "precoFinal">): number {
@@ -100,16 +130,28 @@ export function matchesPriceRange(
   return price >= min && price <= max;
 }
 
-export function usableImage(value: string | null | undefined): string {
+export function usableImage(value: string | null | undefined, apiBaseUrl?: string): string {
   if (!value) {
     return "";
   }
 
-  if (/^https?:\/\//i.test(value) || value.startsWith("/")) {
-    return value;
+  const image = value.trim();
+
+  if (!image) {
+    return "";
   }
 
-  return "";
+  if (/^https?:\/\//i.test(image) || image.startsWith("/")) {
+    return image;
+  }
+
+  const base = apiBaseUrl?.trim().replace(/\/+$/, "");
+
+  if (!base) {
+    return "";
+  }
+
+  return `${base}/imagens/produtos/${encodeURIComponent(image)}`;
 }
 
 export function formatPrice(value: number): string {

@@ -5,6 +5,7 @@ import {
   isFullPriceRange,
   matchesPriceRange,
   normalizePriceRange,
+  parsePriceBounds,
   usableImage,
 } from "./catalog.ts";
 
@@ -35,12 +36,16 @@ describe("consulta do catálogo", () => {
     });
   });
 
-  it("mantém o intervalo de preço entre 0 e 20.000 e sincroniza os limites", () => {
-    expect(clampPrice(-10)).toBe(0);
-    expect(clampPrice(25000)).toBe(20_000);
-    expect(normalizePriceRange(800, 100)).toEqual({ min: 100, max: 800 });
-    expect(isFullPriceRange(0, 20_000)).toBe(true);
-    expect(isFullPriceRange(0, 19999)).toBe(false);
+  it("limita o intervalo aos valores recebidos da API", () => {
+    const bounds = { min: 49.9, max: 5999.9 };
+
+    expect(parsePriceBounds({ menorPreco: "49.90", maiorPreco: 5999.9 })).toEqual(bounds);
+    expect(parsePriceBounds({ menorPreco: null, maiorPreco: 10 })).toBeUndefined();
+    expect(clampPrice(-10, bounds)).toBe(49.9);
+    expect(clampPrice(9000, bounds)).toBe(5999.9);
+    expect(normalizePriceRange(800, 100, bounds)).toEqual({ min: 100, max: 800 });
+    expect(isFullPriceRange(49.9, 5999.9, bounds)).toBe(true);
+    expect(isFullPriceRange(49.9, 1000, bounds)).toBe(false);
   });
 
   it("usa o preço final quando ele existe", () => {
@@ -52,6 +57,9 @@ describe("consulta do catálogo", () => {
   it("aceita só URL de imagem utilizável", () => {
     expect(usableImage("https://cdn.exemplo/gpu.jpg")).toBe("https://cdn.exemplo/gpu.jpg");
     expect(usableImage("/midia/gpu.jpg")).toBe("/midia/gpu.jpg");
+    expect(usableImage("rx-6650.jpg", "http://localhost:8080")).toBe(
+      "http://localhost:8080/imagens/produtos/rx-6650.jpg",
+    );
     expect(usableImage("rx-6650.jpg")).toBe("");
     expect(usableImage(null)).toBe("");
   });

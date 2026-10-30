@@ -1,7 +1,7 @@
-import { SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import { CatalogFilters } from "../components/catalog/CatalogFilters.tsx";
+import { CatalogFilters, type ActiveFilter } from "../components/catalog/CatalogFilters.tsx";
 import { ProductCard } from "../components/home/ProductCard.tsx";
 import { Container } from "../components/layout/Container.tsx";
 import type { Product } from "../data/catalog.ts";
@@ -9,8 +9,6 @@ import { api, type ApiClient } from "../lib/http/client.ts";
 import { isApiError } from "../lib/http/errors.ts";
 import {
   PAGE_SIZES,
-  PRICE_MAX,
-  PRICE_MIN,
   SORT_OPTIONS,
   buildProductQuery,
   emptyProductPage,
@@ -19,24 +17,40 @@ import {
   isFullPriceRange,
   matchesPriceRange,
   normalizePriceRange,
+  parsePriceBounds,
   payablePrice,
   usableImage,
   type CatalogProduct,
   type CatalogQuery,
   type CatalogRef,
   type PageSize,
+  type PriceBounds,
   type ProductPage,
   type SortId,
 } from "../lib/catalog/catalog.ts";
 
 type CatalogPageProps = {
   client?: ApiClient;
+  imageBaseUrl?: string;
 };
 
 type LoadState =
   | { status: "loading" }
   | { status: "error"; message: string }
-  | { status: "ready"; categories: CatalogRef[]; brands: CatalogRef[]; page: ProductPage };
+  | {
+      status: "ready";
+      categories: CatalogRef[];
+      brands: CatalogRef[];
+      page: ProductPage;
+      bounds: PriceBounds | null;
+      priceMessage: string | null;
+    };
+
+type PriceSelection = {
+  min: number;
+  max: number;
+  key: string;
+};
 
 function parseId(value: string | null): number | undefined {
   if (!value) {
@@ -55,7 +69,7 @@ function parseSize(value: string | null): PageSize {
   return value === "20" ? 20 : 10;
 }
 
-function toCard(product: CatalogProduct, categories: CatalogRef[]): Product {
+function toCard(product: CatalogProduct, categories: CatalogRef[], imageBaseUrl?: string): Product {
   const current = payablePrice(product);
   const discounted = product.precoFinal !== null && product.precoFinal < product.preco;
 
@@ -66,15 +80,17 @@ function toCard(product: CatalogProduct, categories: CatalogRef[]): Product {
     price: formatPrice(current),
     compareAt: discounted ? formatPrice(product.preco) : undefined,
     badge: product.desconto && product.desconto > 0 ? formatDiscount(product.desconto) : undefined,
-    image: usableImage(product.imagemURL),
+    image: usableImage(product.imagemURL, imageBaseUrl),
   };
 }
 
-export function CatalogPage({ client = api }: CatalogPageProps) {
+export function CatalogPage({
+  client = api,
+  imageBaseUrl = import.meta.env.VITE_API_BASE_URL,
+}: CatalogPageProps) {
   const [params, setParams] = useSearchParams();
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [priceMin, setPriceMin] = useState(PRICE_MIN);
-  const [priceMax, setPriceMax] = useState(PRICE_MAX);
+  const [priceSelection, setPriceSelection] = useState<PriceSelection | null>(null);
   const [state, setState] = useState<LoadState>({ status: "loading" });
 
   const sort = parseSort(params.get("ordem"));
@@ -83,7 +99,23 @@ export function CatalogPage({ client = api }: CatalogPageProps) {
   const categoriaId = parseId(params.get("categoria"));
   const marcaId = parseId(params.get("marca"));
   const soldByGulix = params.get("vendedor") !== "0";
-  const fullPrice = isFullPriceRange(priceMin, priceMax);
+  const bounds = state.status === "ready" ? state.bounds : null;
+  const boundsKey = bounds ? `${bounds.min}|${bounds.max}` : "";
+
+  if (bounds && priceSelection?.key !== boundsKey) {
+    const next = priceSelection
+      ? normalizePriceRange(priceSelection.min, priceSelection.max, bounds)
+      : { min: bounds.min, max: bounds.max };
+    setPriceSelection({ ...next, key: boundsKey });
+  }
+
+  if (!bounds && priceSelection) {
+    setPriceSelection(null);
+  }
+
+  const priceMin = priceSelection?.min ?? bounds?.min ?? 0;
+  const priceMax = priceSelection?.max ?? bounds?.max ?? 0;
+  const fullPrice = !bounds || !priceSelection || isFullPriceRange(priceMin, priceMax, bounds);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -98,8 +130,9 @@ export function CatalogPage({ client = api }: CatalogPageProps) {
       client.get<CatalogRef[]>("/api/v1/categorias", { signal }),
       client.get<CatalogRef[]>("/api/v1/marcas", { signal }),
       products,
+      loadPriceBounds(client, signal),
     ])
-      .then(([categories, brands, productPage]) => {
+      .then(([categories, brands, productPage, price]) => {
         if (signal.aborted) {
           return;
         }
@@ -108,6 +141,8 @@ export function CatalogPage({ client = api }: CatalogPageProps) {
           status: "ready",
           categories: Array.isArray(categories) ? categories : [],
           brands: Array.isArray(brands) ? brands : [],
+          bounds: price.bounds,
+          priceMessage: price.message,
           page: {
             content: Array.isArray(productPage.content) ? productPage.content : [],
             totalElements: productPage.totalElements ?? 0,
@@ -165,9 +200,12 @@ export function CatalogPage({ client = api }: CatalogPageProps) {
   }
 
   function changePrice(min: number, max: number) {
-    const range = normalizePriceRange(min, max);
-    setPriceMin(range.min);
-    setPriceMax(range.max);
+    if (!bounds) {
+      return;
+    }
+
+    const range = normalizePriceRange(min, max, bounds);
+    setPriceSelection({ ...range, key: boundsKey });
   }
 
   const categories = state.status === "ready" ? state.categories : [];
@@ -180,6 +218,39 @@ export function CatalogPage({ client = api }: CatalogPageProps) {
   const categoryName = categories.find((item) => item.id === categoriaId)?.nome;
   const brandName = brands.find((item) => item.id === marcaId)?.nome;
   const resultCount = fullPrice ? (productPage?.totalElements ?? 0) : visible.length;
+  const activeFilters: ActiveFilter[] = [];
+
+  if (bounds && !fullPrice) {
+    activeFilters.push({
+      id: "preco",
+      label: `${formatPrice(priceMin)} – ${formatPrice(priceMax)}`,
+      onRemove: () => changePrice(bounds.min, bounds.max),
+    });
+  }
+
+  if (categoryName) {
+    activeFilters.push({
+      id: "categoria",
+      label: categoryName,
+      onRemove: () => updateParams({ categoria: undefined }, true),
+    });
+  }
+
+  if (brandName) {
+    activeFilters.push({
+      id: "marca",
+      label: brandName,
+      onRemove: () => updateParams({ marca: undefined }, true),
+    });
+  }
+
+  if (!soldByGulix) {
+    activeFilters.push({
+      id: "vendedor",
+      label: "Sem GuliX",
+      onRemove: () => updateParams({ vendedor: undefined }),
+    });
+  }
 
   return (
     <main id="conteudo" className="py-8 sm:py-10">
@@ -204,25 +275,7 @@ export function CatalogPage({ client = api }: CatalogPageProps) {
             : "Catálogo da GuliX"}
         </p>
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          {categoryName ? (
-            <FilterTag label={categoryName} onRemove={() => updateParams({ categoria: undefined }, true)} />
-          ) : null}
-          {brandName ? (
-            <FilterTag label={brandName} onRemove={() => updateParams({ marca: undefined }, true)} />
-          ) : null}
-          {fullPrice ? null : (
-            <FilterTag
-              label={`${formatPrice(priceMin)} – ${formatPrice(priceMax)}`}
-              onRemove={() => changePrice(PRICE_MIN, PRICE_MAX)}
-            />
-          )}
-          {soldByGulix ? null : (
-            <FilterTag label="Sem GuliX" onRemove={() => updateParams({ vendedor: undefined })} />
-          )}
-        </div>
-
-        <div className="mt-8 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-10">
+        <div className="mt-8 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start lg:gap-8 xl:gap-10">
           <aside className={filtersOpen ? "fixed inset-0 z-40 lg:static" : "hidden lg:block"}>
             <button
               type="button"
@@ -230,29 +283,40 @@ export function CatalogPage({ client = api }: CatalogPageProps) {
               className="absolute inset-0 bg-inverse/70 lg:hidden"
               onClick={() => setFiltersOpen(false)}
             />
-            <div className="relative h-full w-[min(100%,20rem)] overflow-y-auto bg-page p-5 lg:w-auto lg:overflow-visible lg:bg-transparent lg:p-0">
+            <div className="relative h-full w-[min(100%,20rem)] overflow-x-hidden overflow-y-auto bg-page p-5 lg:w-auto lg:overflow-visible lg:bg-transparent lg:p-0">
               <CatalogFilters
                 categories={categories}
                 brands={brands}
                 categoriaId={categoriaId}
                 marcaId={marcaId}
+                bounds={bounds}
                 priceMin={priceMin}
                 priceMax={priceMax}
+                priceMessage={
+                  state.status === "loading"
+                    ? "Carregando a faixa de preços."
+                    : state.status === "ready"
+                      ? state.priceMessage
+                      : null
+                }
                 soldByGulix={soldByGulix}
+                activeFilters={activeFilters}
                 onCategoria={(id) => updateParams({ categoria: id ? String(id) : undefined }, true)}
                 onMarca={(id) => updateParams({ marca: id ? String(id) : undefined }, true)}
                 onPrice={changePrice}
                 onSoldByGulix={(value) => updateParams({ vendedor: value ? undefined : "0" })}
                 listsReady={state.status === "ready"}
                 onClear={() => {
-                  changePrice(PRICE_MIN, PRICE_MAX);
+                  if (bounds) {
+                    changePrice(bounds.min, bounds.max);
+                  }
                   updateParams({ categoria: undefined, marca: undefined, vendedor: undefined }, true);
                 }}
               />
             </div>
           </aside>
 
-          <div>
+          <div className="min-w-0">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <button
                 type="button"
@@ -263,13 +327,13 @@ export function CatalogPage({ client = api }: CatalogPageProps) {
                 <SlidersHorizontal aria-hidden="true" size={16} />
                 Filtros
               </button>
-              <div className="ml-auto flex flex-wrap gap-3">
-                <label className="text-xs text-muted">
+              <div className="ml-auto flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-row">
+                <label className="min-w-0 text-xs text-muted">
                   Ordenar
                   <select
                     value={sort}
                     onChange={(event) => updateParams({ ordem: event.target.value }, true)}
-                    className="mt-1 h-11 rounded-lg border border-line bg-paper px-3 text-sm text-ink"
+                    className="mt-1 h-11 w-full rounded-lg border border-line bg-paper px-3 text-sm text-ink sm:w-44"
                   >
                     {SORT_OPTIONS.map((option) => (
                       <option key={option.id} value={option.id}>
@@ -278,12 +342,12 @@ export function CatalogPage({ client = api }: CatalogPageProps) {
                     ))}
                   </select>
                 </label>
-                <label className="text-xs text-muted">
+                <label className="min-w-0 text-xs text-muted">
                   Por página
                   <select
                     value={String(size)}
                     onChange={(event) => updateParams({ tamanho: event.target.value }, true)}
-                    className="mt-1 h-11 rounded-lg border border-line bg-paper px-3 text-sm text-ink"
+                    className="mt-1 h-11 w-full rounded-lg border border-line bg-paper px-3 text-sm text-ink sm:w-36"
                   >
                     {PAGE_SIZES.map((option) => (
                       <option key={option} value={option}>
@@ -305,10 +369,10 @@ export function CatalogPage({ client = api }: CatalogPageProps) {
               <p className="mt-8 text-sm text-muted">Nenhum produto encontrado com esses filtros.</p>
             ) : null}
             {state.status === "ready" && visible.length > 0 ? (
-              <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+              <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 xl:grid-cols-5">
                 {visible.map((product) => (
-                  <li key={product.id}>
-                    <ProductCard product={toCard(product, categories)} />
+                  <li key={product.id} className="min-w-0">
+                    <ProductCard product={toCard(product, categories, imageBaseUrl)} />
                   </li>
                 ))}
               </ul>
@@ -346,25 +410,11 @@ export function CatalogPage({ client = api }: CatalogPageProps) {
   );
 }
 
-function FilterTag({ label, onRemove }: { label: string; onRemove: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onRemove}
-      className="inline-flex min-h-9 items-center gap-2 rounded-full border border-line bg-paper px-3 text-sm text-ink"
-    >
-      {label}
-      <X aria-hidden="true" size={14} />
-      <span className="sr-only">Remover filtro</span>
-    </button>
-  );
-}
-
 function ProductSkeleton({ count }: { count: number }) {
   return (
-    <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5" aria-hidden="true">
+    <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 xl:grid-cols-5" aria-hidden="true">
       {Array.from({ length: count }, (_, index) => (
-        <li key={index} className="animate-pulse motion-reduce:animate-none">
+        <li key={index} className="min-w-0 animate-pulse motion-reduce:animate-none">
           <div className="aspect-square rounded-2xl bg-paper" />
           <div className="mt-3 h-3 w-16 rounded bg-paper" />
           <div className="mt-2 h-4 w-3/4 rounded bg-paper" />
@@ -372,4 +422,35 @@ function ProductSkeleton({ count }: { count: number }) {
       ))}
     </ul>
   );
+}
+
+async function loadPriceBounds(
+  client: ApiClient,
+  signal: AbortSignal,
+): Promise<{ bounds: PriceBounds | null; message: string | null }> {
+  try {
+    const body = await client.get<{ menorPreco?: unknown; maiorPreco?: unknown }>("/api/v1/produtos/faixa-precos", {
+      signal,
+    });
+    const bounds = parsePriceBounds(body);
+
+    if (!bounds) {
+      return { bounds: null, message: "A faixa de preços retornada pela API é inválida." };
+    }
+
+    return { bounds, message: null };
+  } catch (error) {
+    if (signal.aborted) {
+      throw error;
+    }
+
+    if (isApiError(error) && error.status === 404) {
+      return { bounds: null, message: "Nenhum produto disponível para definir a faixa de preços." };
+    }
+
+    return {
+      bounds: null,
+      message: isApiError(error) ? error.message : "Não foi possível carregar a faixa de preços.",
+    };
+  }
 }
