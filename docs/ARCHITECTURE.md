@@ -61,12 +61,13 @@ gulix-web/
 
 ## Componentes e páginas
 
-Há uma única página, `HomePage`. Ela compõe sete seções:
+Há uma única página, `HomePage`. Ela compõe oito seções:
 
 | Componente | Responsabilidade atual |
 | --- | --- |
-| `Hero` | Abertura, atalhos `#produtos` e `#ofertas`, e cartão do `highlightProduct` |
-| `CategorySection` | Grade visual de categorias |
+| `Hero` | Abertura BUILD YOUR LEGACY, imagem de um PC gamer e atalhos `#produtos` e `#ofertas` |
+| `ChooseYourSide` | Dois painéis visuais, AMD Radeon e NVIDIA GeForce, sem rota nem filtro |
+| `CategorySection` | Sete cards de hardware, sem selo de contagem e sem rota |
 | `FeaturedProducts` | Filtro local e grade de todos os produtos de `catalog.ts` |
 | `OfferBanner` | Banner estático com atalho `#produtos` |
 | `BestSellers` | Grade ordenada por `rankingIds` |
@@ -85,17 +86,17 @@ O layout compartilhado está em `src/components/layout/`: `AnnouncementBar`, `He
 
 As rotas ficam em `src/routes/routes.tsx` e o `RouterProvider` em `src/routes/router.tsx`. `/` renderiza a home existente. Qualquer outro caminho renderiza a página 404, com link de volta para `/`.
 
-A navegação interna do cabeçalho e do rodapé continua em âncoras: `#inicio`, `#produtos`, `#categorias` e `#ofertas`. O cabeçalho marca “Início” com `aria-current="page"`. O menu móvel abre, fecha com Escape e devolve o foco operacional ao fechar o painel. Busca, conta e carrinho não navegam e não alteram dados.
+A navegação principal do cabeçalho, em `Header` e `CategoryMenu`, segue a ordem Início, Categorias, Produtos e Monte seu PC. Início usa `NavLink` para `/` e recebe `aria-current="page"` nessa rota. Categorias abre um submenu com os nomes de `categories` em `catalog.ts` — Tecnologia, Áudio, Games, Casa e decoração e Acessórios — sem consultar a API e sem rota própria. A grade da home usa a lista separada `hardwareCategories`. Produtos usa `NavLink` para `/produtos`. Monte seu PC não possui destino. O menu móvel abre pelo botão existente, fecha com Escape e recolhe o submenu antes de fechar o painel quando ele está aberto. Busca, conta e carrinho permanecem sem navegação de negócio. O rodapé ainda usa as âncoras anteriores, inclusive Ofertas.
 
 ### Decisão planejada
 
-As páginas de catálogo, detalhe, autenticação, carrinho, conta, endereços, checkout e pedidos entram nas tarefas das features correspondentes, como novos objetos em `appRoutes`. A refatoração da home não cria essas rotas.
+A listagem do catálogo está em `/produtos`. Detalhe, autenticação, carrinho, conta, endereços, checkout e pedidos entram nas tarefas das features correspondentes, como novos objetos em `appRoutes`.
 
 ## Comunicação com o backend
 
 ### Estado atual
 
-`createApiClient` em `src/lib/http/client.ts` monta as URLs a partir de `VITE_API_BASE_URL`, aceita `GET`, `POST`, `PUT`, `PATCH` e `DELETE`, anexa `Authorization: Bearer` somente quando recebe `token` e lê corpo vazio, inclusive `204`. Nenhuma tela chama esse cliente ainda. A classe `CorsConfig` do backend está vazia, então a comunicação pelo navegador não está habilitada no código do servidor.
+`createApiClient` em `src/lib/http/client.ts` monta as URLs a partir de `VITE_API_BASE_URL`, aceita `GET`, `POST`, `PUT`, `PATCH` e `DELETE`, anexa `Authorization: Bearer` somente quando recebe `token` e lê corpo vazio, inclusive `204`. A página `/produtos` consulta `GET /api/v1/produtos`, `GET /api/v1/categorias` e `GET /api/v1/marcas`. A classe `CorsConfig` do backend está vazia, então essa comunicação pelo navegador não está habilitada no código do servidor.
 
 O backend usado como contrato é uma API stateless, com prefixo `/api/v1`, JWT no header `Authorization` e sessão sem estado no servidor. A documentação OpenAPI e o Swagger UI são públicos. Isso não substitui a leitura dos controllers e dos DTOs.
 
@@ -171,13 +172,13 @@ Senha de cadastro e de atualização: mínimo de 8 caracteres, com maiúscula, m
 
 ### Catálogo
 
-A home exibe oito produtos locais, com preço, comparação, parcela e selo já montados em texto. As categorias locais incluem imagem, descrição e um texto de contagem. Essa contagem não acompanha a lista: Tecnologia informa `4 ITENS` e há dois produtos dessa categoria; Acessórios informa `4 ITENS` e há um produto.
+A home exibe oito produtos locais, com preço, comparação, parcela e selo já montados em texto. `categories` ainda guarda as cinco categorias do submenu, com imagem, descrição e um texto de contagem. Essa contagem não acompanha a lista: Tecnologia informa `4 ITENS` e há dois produtos dessa categoria; Acessórios informa `4 ITENS` e há um produto. A seção Explore por categoria não usa esse texto. Ela lê `hardwareCategories`: Gabinete, Placa de Vídeo, Placa-mãe, Processador, Memória RAM, Fonte e Armazenamento.
 
 Quando a integração existir, o preço cobrável é `preco`. O carrinho e o item do pedido usam `produto.preco`. O campo `desconto` não entra nesse cálculo. `imagemURL` está documentado no DTO como nome de arquivo ou URL, e não há endpoint de mídia. `destaque` seleciona produtos no cliente. Marcas entram como filtro da listagem. A página de detalhe usa o `id` numérico.
 
 ### Carrinho
 
-O carrinho é do servidor e pertence ao usuário. Incluir o mesmo produto soma a quantidade. Estoque disponível é validado na inclusão, na atualização e na criação do pedido. A home não chama essas operações. O botão `+` do hero e o ícone do cabeçalho não têm ação.
+O carrinho é do servidor e pertence ao usuário. Incluir o mesmo produto soma a quantidade. Estoque disponível é validado na inclusão, na atualização e na criação do pedido. A home não chama essas operações. O ícone do cabeçalho não tem ação.
 
 ### Endereços
 
@@ -238,7 +239,7 @@ O `README.md` informa que o Vite sobe em `http://localhost:5173`.
 | Sem favoritos e sem newsletter | Nenhum controller correspondente | Os controles atuais não devem ganhar persistência |
 | Pagamento limitado a cartão e boleto | `MetodoPagamento` | O checkout não oferece Pix |
 | Carrinho sem imagem | `ItemCarrinhoResponseDTO` | A página do carrinho mostra nome, preço e quantidade, salvo consulta adicional ao produto |
-| Cópia de “até 12x sem juros” | `AnnouncementBar`, `Hero` e `Benefits` | Texto de vitrine. A regra confirmada isenta juros só até 6 parcelas |
+| Cópia de “até 12x sem juros” | `AnnouncementBar` e `Benefits` | Texto de vitrine. A regra confirmada isenta juros só até 6 parcelas |
 
 ## Dependências externas
 
