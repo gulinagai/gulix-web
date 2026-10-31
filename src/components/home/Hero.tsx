@@ -29,14 +29,14 @@ export function Hero() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 to="/produtos"
-                className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-action px-5 text-sm font-semibold text-white hover:bg-action-hover"
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-action px-5 text-sm font-semibold text-white transition-colors duration-300 hover:bg-action-hover motion-reduce:transition-none"
               >
                 Explorar produtos
                 <ArrowRight aria-hidden="true" size={16} />
               </Link>
               <a
                 href="#selecao-da-casa"
-                className="inline-flex min-h-11 items-center rounded-lg border border-line bg-paper px-5 text-sm font-semibold text-ink"
+                className="inline-flex min-h-11 items-center rounded-lg border border-line bg-paper px-5 text-sm font-semibold text-ink transition-colors duration-300 hover:border-brand hover:bg-brand/10 hover:text-brand motion-reduce:transition-none"
               >
                 Ver ofertas
               </a>
