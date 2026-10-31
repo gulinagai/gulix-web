@@ -30,7 +30,7 @@ describe("roteamento", () => {
       expect(screen.getByRole("heading", { name })).toBeTruthy();
     }
     expect(screen.getByRole("heading", { name: "Produtos em destaque" })).toBeTruthy();
-    expect(screen.getByText("Parcele sua compra em até 12x sem juros.")).toBeTruthy();
+    expect(screen.getByText("Flexibilidade para escolher. Parcele em até 6x sem juros.")).toBeTruthy();
     expect(screen.queryByText("Frete especial em produtos selecionados")).toBeNull();
     expect(screen.queryByText("Até 12x sem juros / Curadoria própria")).toBeNull();
   });

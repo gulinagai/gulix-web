@@ -10,7 +10,7 @@ const benefits = [
   {
     icon: Wallet,
     title: "Pagamento facilitado",
-    description: "Parcele sua compra em até 12x sem juros.",
+    description: "Flexibilidade para escolher. Parcele em até 6x sem juros.",
   },
   {
     icon: BadgeCheck,
