@@ -44,8 +44,12 @@ export function CategorySection() {
           {hardwareCategories.map((category, index) => (
             <li key={category.id} className={cardClassName(index)}>
               <article className="h-full">
-                <div className="overflow-hidden rounded-2xl">
-                  <img src={category.image} alt="" className="aspect-[4/3] w-full object-cover" />
+                <div className="group overflow-hidden rounded-2xl border border-line transition duration-300 hover:border-ink/30 motion-reduce:transition-none">
+                  <img
+                    src={category.image}
+                    alt=""
+                    className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                  />
                 </div>
                 <h3 className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-ink">
                   {category.name}
