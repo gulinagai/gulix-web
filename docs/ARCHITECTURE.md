@@ -96,13 +96,13 @@ A listagem do catálogo está em `/produtos`. Detalhe, autenticação, carrinho,
 
 ### Estado atual
 
-`createApiClient` em `src/lib/http/client.ts` monta as URLs a partir de `VITE_API_BASE_URL`, aceita `GET`, `POST`, `PUT`, `PATCH` e `DELETE`, anexa `Authorization: Bearer` somente quando recebe `token` e lê corpo vazio, inclusive `204`. A página `/produtos` consulta `GET /api/v1/produtos`, `GET /api/v1/categorias` e `GET /api/v1/marcas`. A classe `CorsConfig` do backend está vazia, então essa comunicação pelo navegador não está habilitada no código do servidor.
+`createApiClient` em `src/lib/http/client.ts` monta as URLs a partir de `VITE_API_BASE_URL`, aceita `GET`, `POST`, `PUT`, `PATCH` e `DELETE`, anexa `Authorization: Bearer` somente quando recebe `token` e lê corpo vazio, inclusive `204`. A página `/produtos` consulta `GET /api/v1/produtos`, `GET /api/v1/categorias`, `GET /api/v1/marcas` e `GET /api/v1/produtos/faixa-precos`. O `CorsConfig` libera somente `http://localhost:5173` e entra no `SecurityFilterChain`.
 
 O backend usado como contrato é uma API stateless, com prefixo `/api/v1`, JWT no header `Authorization` e sessão sem estado no servidor. A documentação OpenAPI e o Swagger UI são públicos. Isso não substitui a leitura dos controllers e dos DTOs.
 
 ### Decisão planejada
 
-O armazenamento da sessão entra na feature `auth`. O cliente já está pronto para receber o token, sem guardá-lo. Ele não será considerado validado no navegador enquanto o CORS não permitir a origem do Vite.
+O armazenamento da sessão entra na feature `auth`. O cliente já está pronto para receber o token, sem guardá-lo. O navegador em `http://localhost:5173` pode chamar a API quando o backend local estiver no ar e `VITE_API_BASE_URL` apontar para ele.
 
 ## Contratos relevantes
 
@@ -206,7 +206,7 @@ Formulários futuros devem mostrar `message` e, quando existir, `fields`. Isso v
 
 ## Variáveis de ambiente
 
-A URL da API é `VITE_API_BASE_URL`, documentada em `.env.example`. O arquivo `.env` fica fora do Git. Segredos do backend — banco, `JWT_SECRET`, Stripe e OpenRouteService — não entram no frontend.
+A URL da API é `VITE_API_BASE_URL`, documentada em `.env.example` e definida localmente em `.env.local`. Os arquivos `.env` e `.env.local` ficam fora do Git. Segredos do backend — banco, `JWT_SECRET`, Stripe e OpenRouteService — não entram no frontend.
 
 O `README.md` informa que o Vite sobe em `http://localhost:5173`.
 

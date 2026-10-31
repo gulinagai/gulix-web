@@ -25,4 +25,4 @@ npm run test
 npm run build
 ```
 
-Copie `.env.example` para `.env` quando for chamar a API. A variável é `VITE_API_BASE_URL`. O CORS do backend ainda não libera o navegador.
+A URL da API fica em `.env.local`, na variável `VITE_API_BASE_URL`, sem o prefixo `/api/v1`. O backend libera o navegador em `http://localhost:5173`. Reinicie o Vite depois de criar ou alterar esse arquivo.

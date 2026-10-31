@@ -1,16 +1,24 @@
 import type { Product } from "../../data/catalog.ts";
 import { Heart } from "lucide-react";
+import { useState } from "react";
 
 type ProductCardProps = {
   product: Product;
 };
 
 export function ProductCard({ product }: ProductCardProps) {
+  const [imageFailed, setImageFailed] = useState(false);
+
   return (
-    <article>
+    <article className="min-w-0">
       <div className="relative overflow-hidden rounded-2xl bg-paper shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]">
-        {product.image ? (
-          <img src={product.image} alt="" className="aspect-square w-full object-cover" />
+        {product.image && !imageFailed ? (
+          <img
+            src={product.image}
+            alt=""
+            className="aspect-square w-full object-cover"
+            onError={() => setImageFailed(true)}
+          />
         ) : (
           <div className="aspect-square w-full bg-shelf" />
         )}
@@ -28,18 +36,14 @@ export function ProductCard({ product }: ProductCardProps) {
         </button>
       </div>
       <div className="pt-3">
-        <p className="text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
+        <p className="truncate text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
           {product.category}
         </p>
-        <h3 className="mt-1 text-[15px] font-semibold text-ink">{product.name}</h3>
-        <p className="mt-2 text-lg font-bold tracking-tight text-ink">
-          {product.price}
-          {product.compareAt ? (
-            <span className="ml-2 text-sm font-medium text-muted line-through">
-              {product.compareAt}
-            </span>
-          ) : null}
-        </p>
+        <h3 className="mt-1 line-clamp-2 text-[15px] leading-snug font-semibold text-ink">{product.name}</h3>
+        <p className="mt-2 text-lg font-bold tracking-tight text-ink">{product.price}</p>
+        {product.compareAt ? (
+          <p className="text-sm font-medium text-muted line-through">{product.compareAt}</p>
+        ) : null}
         {product.installment ? (
           <p className="mt-1 text-xs text-muted">{product.installment}</p>
         ) : null}
