@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createApiClient } from "../lib/http/client.ts";
+import { openCatalogAtTop } from "../lib/navigation/openCatalogAtTop.ts";
 import { CatalogPage } from "./CatalogPage.tsx";
 
 const baseUrl = "http://api.test";
@@ -76,9 +77,11 @@ function mockCatalog() {
   });
 }
 
-function renderCatalog() {
+function renderCatalog(path = "/produtos", state?: unknown) {
+  const url = new URL(path, "http://gulix.test");
+
   return render(
-    <MemoryRouter initialEntries={["/produtos"]}>
+    <MemoryRouter initialEntries={[{ pathname: url.pathname, search: url.search, state }]}>
       <CatalogPage client={createApiClient({ baseUrl })} imageBaseUrl={baseUrl} />
     </MemoryRouter>,
   );
@@ -262,5 +265,47 @@ describe("catálogo", () => {
       expect(urls.some((url) => url.includes("categoriaId=1") && url.includes("marcaId=5"))).toBe(true);
       expect(screen.getByText("Nenhum produto encontrado com esses filtros.")).toBeTruthy();
     });
+  });
+
+  it("abre com a categoria da query e permite removê-la", async () => {
+    const fetchMock = mockCatalog();
+    const user = userEvent.setup();
+    renderCatalog("/produtos?categoria=3");
+
+    const checkbox = await screen.findByRole("checkbox", { name: "Memória RAM" });
+    expect(checkbox).toHaveProperty("checked", true);
+    expect(screen.getByRole("button", { name: "Remover Memória RAM" })).toBeTruthy();
+
+    await waitFor(() => {
+      const urls = fetchMock.mock.calls.map((call) => String(call[0]));
+      expect(urls.some((url) => url.includes("categoriaId=3"))).toBe(true);
+    });
+
+    await user.click(screen.getByRole("button", { name: "Remover Memória RAM" }));
+
+    await waitFor(() => {
+      expect(checkbox).toHaveProperty("checked", false);
+      const urls = fetchMock.mock.calls.map((call) => String(call[0]));
+      const productUrls = urls.filter((url) => url.includes("/api/v1/produtos?") || url.endsWith("/api/v1/produtos"));
+      expect(productUrls.at(-1)?.includes("categoriaId=")).toBe(false);
+    });
+  });
+
+  it("abre no topo só quando a navegação da seção Navegue pede", async () => {
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    mockCatalog();
+    const { unmount } = renderCatalog("/produtos?categoria=3");
+
+    await screen.findByRole("checkbox", { name: "Memória RAM" });
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    unmount();
+    renderCatalog("/produtos?categoria=3", openCatalogAtTop);
+
+    await screen.findByRole("checkbox", { name: "Memória RAM" });
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "auto" });
+    expect(scrollTo.mock.calls.some((call) => (call[0] as { behavior?: string } | undefined)?.behavior === "smooth")).toBe(
+      false,
+    );
   });
 });

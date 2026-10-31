@@ -1,6 +1,12 @@
 import { ArrowUpRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import { hardwareCategories } from "../../data/catalog.ts";
+import { api, type ApiClient } from "../../lib/http/client.ts";
+import type { CatalogRef } from "../../lib/catalog/catalog.ts";
+import { openCatalogAtTop } from "../../lib/navigation/openCatalogAtTop.ts";
 import { Container } from "../layout/Container.tsx";
+import { categoryIdForName } from "./categoryLink.ts";
 
 function cardClassName(index: number) {
   const isLast = index === hardwareCategories.length - 1;
@@ -17,7 +23,32 @@ function cardClassName(index: number) {
     .join(" ");
 }
 
-export function CategorySection() {
+type CategorySectionProps = {
+  client?: ApiClient;
+};
+
+export function CategorySection({ client = api }: CategorySectionProps) {
+  const [categories, setCategories] = useState<CatalogRef[]>([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    client
+      .get<CatalogRef[]>("/api/v1/categorias", { signal: controller.signal })
+      .then((items) => {
+        if (!controller.signal.aborted) {
+          setCategories(Array.isArray(items) ? items : []);
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setCategories([]);
+        }
+      });
+
+    return () => controller.abort();
+  }, [client]);
+
   return (
     <section id="categorias" className="scroll-mt-24 bg-band py-12 sm:py-16" aria-labelledby="titulo-categorias">
       <Container>
@@ -41,9 +72,10 @@ export function CategorySection() {
           </p>
         </div>
         <ul className="mt-8 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-8">
-          {hardwareCategories.map((category, index) => (
-            <li key={category.id} className={cardClassName(index)}>
-              <article className="h-full">
+          {hardwareCategories.map((category, index) => {
+            const categoryId = categoryIdForName(category.name, categories);
+            const content = (
+              <>
                 <div className="group overflow-hidden rounded-2xl border border-line transition duration-300 hover:border-ink/30 motion-reduce:transition-none">
                   <img
                     src={category.image}
@@ -56,9 +88,25 @@ export function CategorySection() {
                   <ArrowUpRight aria-hidden="true" size={14} />
                 </h3>
                 <p className="mt-0.5 text-sm text-muted">{category.description}</p>
-              </article>
-            </li>
-          ))}
+              </>
+            );
+
+            return (
+              <li key={category.id} className={cardClassName(index)}>
+                {categoryId === undefined ? (
+                  <article className="h-full">{content}</article>
+                ) : (
+                  <Link
+                    to={`/produtos?categoria=${categoryId}`}
+                    state={openCatalogAtTop}
+                    className="block h-full"
+                  >
+                    {content}
+                  </Link>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </Container>
     </section>
