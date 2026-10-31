@@ -1,6 +1,6 @@
 import { Menu, Search, ShoppingBag, User, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { NavLink } from "react-router";
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
+import { Link, NavLink, useLocation, useMatch, useNavigate } from "react-router";
 import { categories } from "../../data/catalog.ts";
 import { CategoryMenu } from "./CategoryMenu.tsx";
 import { Container } from "./Container.tsx";
@@ -15,6 +15,20 @@ const linkClassName = "text-sm font-medium text-ink/80 hover:text-ink";
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const home = useMatch({ path: "/", end: true });
+  const location = useLocation();
+  const navigate = useNavigate();
+  const returnToTop = useRef(false);
+  const onHome = Boolean(home);
+
+  useLayoutEffect(() => {
+    if (!onHome || !returnToTop.current) {
+      return;
+    }
+
+    returnToTop.current = false;
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [onHome]);
 
   useEffect(() => {
     if (!menuOpen) {
@@ -35,12 +49,32 @@ export function Header() {
     setMenuOpen(false);
   }
 
+  function onLogoClick(event: MouseEvent<HTMLAnchorElement>) {
+    if (!onHome) {
+      returnToTop.current = true;
+      return;
+    }
+
+    event.preventDefault();
+
+    if (window.scrollY === 0) {
+      return;
+    }
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+
+    if (location.hash) {
+      navigate("/", { replace: true });
+    }
+  }
+
   return (
     <header id="inicio" className="sticky top-0 z-30 border-b border-line bg-page">
       <Container className="flex h-16 items-center gap-6 lg:h-[4.5rem] lg:gap-8">
-        <a href="#inicio" className="shrink-0" aria-label="GuliX">
+        <Link to="/" className="shrink-0" aria-label="GuliX" onClick={onLogoClick}>
           <Wordmark />
-        </a>
+        </Link>
 
         <nav aria-label="Principal" className="hidden lg:block">
           <ul className="flex items-center gap-7">

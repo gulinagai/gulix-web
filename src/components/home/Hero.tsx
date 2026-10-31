@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router";
 import heroPc from "../../assets/catalog/hero-pc.jpg";
 import { Container } from "../layout/Container.tsx";
 
@@ -26,16 +27,16 @@ export function Hero() {
               Um computador com a sua cara, do primeiro componente ao último detalhe.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href="#produtos"
-                className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-action px-5 text-sm font-semibold text-white hover:bg-action-hover"
+              <Link
+                to="/produtos"
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-action px-5 text-sm font-semibold text-white transition-colors duration-300 hover:bg-action-hover motion-reduce:transition-none"
               >
                 Explorar produtos
                 <ArrowRight aria-hidden="true" size={16} />
-              </a>
+              </Link>
               <a
-                href="#ofertas"
-                className="inline-flex min-h-11 items-center rounded-lg border border-line bg-paper px-5 text-sm font-semibold text-ink"
+                href="#selecao-da-casa"
+                className="inline-flex min-h-11 items-center rounded-lg border border-line bg-paper px-5 text-sm font-semibold text-ink transition-colors duration-300 hover:border-brand hover:bg-brand/10 hover:text-brand motion-reduce:transition-none"
               >
                 Ver ofertas
               </a>

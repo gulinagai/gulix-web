@@ -30,8 +30,27 @@ describe("roteamento", () => {
       expect(screen.getByRole("heading", { name })).toBeTruthy();
     }
     expect(screen.getByRole("heading", { name: "Produtos em destaque" })).toBeTruthy();
-    expect(screen.getByText("Frete especial em produtos selecionados")).toBeTruthy();
-    expect(screen.getByText("Até 12x sem juros / Curadoria própria")).toBeTruthy();
+    expect(screen.getByText("Flexibilidade para escolher. Parcele em até 6x sem juros.")).toBeTruthy();
+    expect(screen.queryByText("Frete especial em produtos selecionados")).toBeNull();
+    expect(screen.queryByText("Até 12x sem juros / Curadoria própria")).toBeNull();
+  });
+
+  it("leva Explorar produtos ao catálogo sem filtros e Ver ofertas até a seleção da casa", async () => {
+    const user = userEvent.setup();
+    const router = createMemoryRouter(appRoutes, { initialEntries: ["/"] });
+    render(<RouterProvider router={router} />);
+
+    const offers = screen.getByRole("link", { name: "Ver ofertas" });
+    expect(offers.getAttribute("href")).toBe("#selecao-da-casa");
+    expect(document.getElementById("selecao-da-casa")?.textContent).toContain("Seleção da casa");
+    expect(document.getElementById("selecao-da-casa")?.className).toContain("scroll-mt-24");
+
+    await user.click(screen.getByRole("link", { name: "Explorar produtos" }));
+
+    expect(router.state.location.pathname).toBe("/produtos");
+    expect(router.state.location.search).toBe("");
+    expect(screen.getByRole("checkbox", { name: "GuliX" })).toHaveProperty("checked", true);
+    expect(screen.queryByRole("button", { name: /^Remover / })).toBeNull();
   });
 
   it("esconde a faixa de anúncio no catálogo", () => {
@@ -47,10 +66,18 @@ describe("roteamento", () => {
     renderAt("/endereco-inexistente");
 
     expect(screen.getByRole("heading", { name: "Página não encontrada" })).toBeTruthy();
+    expect(screen.getByText("Frete especial em produtos selecionados")).toBeTruthy();
     expect(screen.queryByRole("heading", { name: /build your legacy/i })).toBeNull();
 
     await user.click(screen.getByRole("link", { name: "Voltar ao início" }));
 
     expect(screen.getByRole("heading", { name: /build your legacy/i })).toBeTruthy();
+  });
+
+  it("abre a página provisória do produto com o id da rota", () => {
+    renderAt("/produtos/19");
+
+    expect(screen.getByRole("heading", { name: "19" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Produtos" })).toBeNull();
   });
 });

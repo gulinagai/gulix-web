@@ -1,12 +1,13 @@
 import { SlidersHorizontal } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { Link, useLocation, useSearchParams } from "react-router";
 import { CatalogFilters, type ActiveFilter } from "../components/catalog/CatalogFilters.tsx";
 import { ProductCard } from "../components/home/ProductCard.tsx";
 import { Container } from "../components/layout/Container.tsx";
 import type { Product } from "../data/catalog.ts";
 import { api, type ApiClient } from "../lib/http/client.ts";
 import { isApiError } from "../lib/http/errors.ts";
+import { opensCatalogAtTop } from "../lib/navigation/openCatalogAtTop.ts";
 import {
   PAGE_SIZES,
   SORT_OPTIONS,
@@ -89,7 +90,16 @@ export function CatalogPage({
   client = api,
   imageBaseUrl = import.meta.env.VITE_API_BASE_URL,
 }: CatalogPageProps) {
+  const location = useLocation();
   const [params, setParams] = useSearchParams();
+
+  useLayoutEffect(() => {
+    if (!opensCatalogAtTop(location.state)) {
+      return;
+    }
+
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [location.state]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [priceSelection, setPriceSelection] = useState<PriceSelection | null>(null);
   const [state, setState] = useState<LoadState>({ status: "loading" });
