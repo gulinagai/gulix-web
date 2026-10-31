@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router";
+import { MemoryRouter, Outlet, RouterProvider, createMemoryRouter } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Header } from "./Header.tsx";
 
@@ -84,5 +84,54 @@ describe("navegação do cabeçalho", () => {
     expect(screen.getAllByRole("searchbox", { name: "Buscar produtos" })).toHaveLength(2);
     expect(screen.getByRole("link", { name: "Minha conta" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Carrinho" })).toBeTruthy();
+  });
+
+  it("na home, rola suavemente até o topo e não rola se já estiver no início", async () => {
+    const user = userEvent.setup();
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+
+    Object.defineProperty(window, "scrollY", { value: 480, configurable: true });
+    renderHeader();
+    await user.click(screen.getByRole("link", { name: "GuliX" }));
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+
+    scrollTo.mockClear();
+    Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
+    await user.click(screen.getByRole("link", { name: "GuliX" }));
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    scrollTo.mockRestore();
+  });
+
+  it("em outra página, leva à home e posiciona o scroll no topo", async () => {
+    const user = userEvent.setup();
+    const scrollTo = vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    const router = createMemoryRouter(
+      [
+        {
+          path: "/",
+          element: (
+            <>
+              <Header />
+              <Outlet />
+            </>
+          ),
+          children: [
+            { index: true, element: <main>Home</main> },
+            { path: "produtos", element: <main>Catálogo</main> },
+          ],
+        },
+      ],
+      { initialEntries: ["/produtos"] },
+    );
+
+    render(<RouterProvider router={router} />);
+    await user.click(screen.getByRole("link", { name: "GuliX" }));
+
+    expect(router.state.location.pathname).toBe("/");
+    expect(router.state.location.hash).toBe("");
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "auto" });
+
+    scrollTo.mockRestore();
   });
 });
