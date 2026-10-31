@@ -73,4 +73,11 @@ describe("roteamento", () => {
 
     expect(screen.getByRole("heading", { name: /build your legacy/i })).toBeTruthy();
   });
+
+  it("abre a página provisória do produto com o id da rota", () => {
+    renderAt("/produtos/19");
+
+    expect(screen.getByRole("heading", { name: "19" })).toBeTruthy();
+    expect(screen.queryByRole("heading", { name: "Produtos" })).toBeNull();
+  });
 });

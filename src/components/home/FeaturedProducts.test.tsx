@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createApiClient } from "../../lib/http/client.ts";
 import { FeaturedProducts } from "./FeaturedProducts.tsx";
@@ -62,7 +63,9 @@ function paymentBody(id: number) {
 
 function renderSection() {
   return render(
-    <FeaturedProducts client={createApiClient({ baseUrl })} imageBaseUrl={baseUrl} />,
+    <MemoryRouter>
+      <FeaturedProducts client={createApiClient({ baseUrl })} imageBaseUrl={baseUrl} />
+    </MemoryRouter>,
   );
 }
 
@@ -103,6 +106,8 @@ describe("seleção da casa", () => {
     renderSection();
 
     expect(await screen.findByRole("heading", { name: featured.nome })).toBeTruthy();
+    expect(screen.getByRole("link", { name: new RegExp(featured.nome) }).getAttribute("href")).toBe("/produtos/4");
+    expect(screen.getByRole("link", { name: new RegExp(regular.nome) }).getAttribute("href")).toBe("/produtos/19");
     expect(screen.getByRole("heading", { name: regular.nome })).toBeTruthy();
     expect(screen.getByText("Placa mãe")).toBeTruthy();
     expect(screen.getByText("Gabinete")).toBeTruthy();

@@ -97,6 +97,7 @@ describe("catálogo", () => {
     renderCatalog();
 
     expect(await screen.findByRole("heading", { name: "Memória DDR5" })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Memória DDR5/ }).getAttribute("href")).toBe("/produtos/1");
     expect(screen.getByRole("heading", { name: "Fonte 750W" })).toBeTruthy();
     expect(document.querySelector('img[src="https://cdn.exemplo/ram.jpg"]')).toBeTruthy();
     expect(document.querySelector('img[src="http://api.test/imagens/produtos/fonte.jpg"]')).toBeTruthy();
