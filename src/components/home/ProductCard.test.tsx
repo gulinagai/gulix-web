@@ -28,6 +28,10 @@ describe("card de produto", () => {
 
     expect(frame?.className).toContain("hover:border-brand");
     expect(frame?.className).toContain("cursor-pointer");
+    const favorite = screen.getByRole("button", { name: "Favoritar RX 9070 XT" });
+    expect(favorite.className).toContain("cursor-pointer");
+    expect(favorite.className).toContain("hover:bg-zinc-200");
+    expect(favorite.querySelector("svg")?.className.baseVal).toContain("group-hover/favorite:text-red-500");
     expect(frame?.className).toContain("overflow-hidden");
     expect(container.querySelector("img")?.className).toContain("group-hover:scale-[1.03]");
   });
@@ -37,6 +41,9 @@ describe("card de produto", () => {
 
     expect(container.querySelector("[class*='hover:border-brand']")).toBeNull();
     expect(container.querySelector("[class*='cursor-pointer']")).toBeNull();
+    expect(screen.getByRole("button", { name: "Favoritar RX 9070 XT" }).querySelector("svg")?.className.baseVal ?? "").not.toContain(
+      "group-hover/favorite",
+    );
     expect(container.querySelector("[class*='group-hover:scale']")).toBeNull();
   });
 

@@ -40,9 +40,21 @@ export function ProductCard({ product, imageHover = false }: ProductCardProps) {
         <button
           type="button"
           aria-label={`Favoritar ${product.name}`}
-          className="absolute top-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-page shadow-sm"
+          className={`absolute top-3 right-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-page shadow-sm ${
+            imageHover
+              ? "group/favorite cursor-pointer transition-colors duration-300 hover:bg-zinc-200 motion-reduce:transition-none"
+              : ""
+          }`}
         >
-          <Heart aria-hidden="true" size={16} />
+          <Heart
+            aria-hidden="true"
+            size={16}
+            className={
+              imageHover
+                ? "transition-colors duration-300 group-hover/favorite:text-red-500 motion-reduce:transition-none"
+                : undefined
+            }
+          />
         </button>
       </div>
       <div className="pt-3">
