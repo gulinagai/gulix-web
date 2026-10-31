@@ -27,6 +27,7 @@ describe("card de produto", () => {
     const frame = container.querySelector("img")?.parentElement;
 
     expect(frame?.className).toContain("hover:border-brand");
+    expect(frame?.className).toContain("cursor-pointer");
     expect(frame?.className).toContain("overflow-hidden");
     expect(container.querySelector("img")?.className).toContain("group-hover:scale-[1.03]");
   });
@@ -35,6 +36,7 @@ describe("card de produto", () => {
     const { container } = render(<ProductCard product={{ ...product, image: "gpu.jpg" }} />);
 
     expect(container.querySelector("[class*='hover:border-brand']")).toBeNull();
+    expect(container.querySelector("[class*='cursor-pointer']")).toBeNull();
     expect(container.querySelector("[class*='group-hover:scale']")).toBeNull();
   });
 

@@ -18,7 +18,7 @@ export function ProductCard({ product, imageHover = false }: ProductCardProps) {
       <div
         className={`relative overflow-hidden rounded-2xl bg-paper shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] ${
           imageHover
-            ? "group border-2 border-transparent transition duration-300 hover:border-brand motion-reduce:transition-none"
+            ? "group cursor-pointer border-2 border-transparent transition duration-300 hover:border-brand motion-reduce:transition-none"
             : ""
         }`}
       >

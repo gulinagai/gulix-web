@@ -111,6 +111,7 @@ describe("navegue", () => {
     const cabinet = screen.getByRole("link", { name: /Gabinete/ });
 
     expect(processor.getAttribute("href")).toBe("/produtos?categoria=44");
+    expect(processor.className).toContain("cursor-pointer");
     expect(gpu.getAttribute("href")).toBe("/produtos?categoria=22");
     expect(board.getAttribute("href")).toBe("/produtos?categoria=33");
     expect(memory.getAttribute("href")).toBe("/produtos?categoria=55");

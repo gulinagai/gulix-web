@@ -99,7 +99,7 @@ export function CategorySection({ client = api }: CategorySectionProps) {
                   <Link
                     to={`/produtos?categoria=${categoryId}`}
                     state={openCatalogAtTop}
-                    className="block h-full"
+                    className="block h-full cursor-pointer"
                   >
                     {content}
                   </Link>
