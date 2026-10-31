@@ -26,7 +26,7 @@ export function FeaturedProducts() {
           Produtos em destaque
         </h2>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted sm:text-base">
-          Peças escolhidas pela nossa curadoria, prontas para acompanhar o seu dia.
+          Uma seleção especial de hardware para levar seu setup a outro nível.
         </p>
         <div className="mt-6 flex flex-wrap gap-2" role="group" aria-label="Filtrar produtos">
           {filters.map((item) => {
