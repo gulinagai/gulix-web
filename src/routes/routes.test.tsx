@@ -30,6 +30,16 @@ describe("roteamento", () => {
       expect(screen.getByRole("heading", { name })).toBeTruthy();
     }
     expect(screen.getByRole("heading", { name: "Produtos em destaque" })).toBeTruthy();
+    expect(screen.getByText("Frete especial em produtos selecionados")).toBeTruthy();
+    expect(screen.getByText("Até 12x sem juros / Curadoria própria")).toBeTruthy();
+  });
+
+  it("esconde a faixa de anúncio no catálogo", () => {
+    renderAt("/produtos");
+
+    expect(screen.queryByText("Frete especial em produtos selecionados")).toBeNull();
+    expect(screen.queryByText("Até 12x sem juros / Curadoria própria")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Produtos" })).toBeTruthy();
   });
 
   it("apresenta a página 404 e volta para a home", async () => {

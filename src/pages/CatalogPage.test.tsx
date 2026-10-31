@@ -106,8 +106,23 @@ describe("catálogo", () => {
     expect(screen.queryByText("R$ 500,00")).toBeNull();
     expect(screen.getByText("R$ 8.000,00")).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Fonte 750W" }).closest("article")?.querySelector(".line-through")).toBeNull();
-    expect(screen.getByText("12 produtos encontrados")).toBeTruthy();
-    expect(screen.getByText("Página 1 de 2")).toBeTruthy();
+    const pagination = screen.getByRole("navigation", { name: "Paginação" });
+    const pageInfo = screen.getByText("Página 1 de 2");
+    const previous = screen.getByRole("button", { name: "Anterior" });
+    const next = screen.getByRole("button", { name: "Próxima" });
+    const count = screen.getByText("12 produtos encontrados");
+    expect(pagination.contains(pageInfo)).toBe(true);
+    expect(pagination.contains(previous)).toBe(true);
+    expect(pagination.contains(count)).toBe(true);
+    expect(pageInfo.compareDocumentPosition(previous) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(previous.compareDocumentPosition(next) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(next.compareDocumentPosition(count) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Memória DDR5" }).compareDocumentPosition(count) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(screen.getByLabelText("Ordenar").closest("label")?.className).toContain("gap-3");
+    expect(screen.getByLabelText("Por página").closest("label")?.className).toContain("gap-3");
     expect(screen.getByText("De R$ 49,90 até R$ 8.000,00")).toBeTruthy();
     expect(screen.getByRole("slider", { name: "Mínimo" })).toHaveProperty("min", "49.9");
     expect(screen.getByRole("slider", { name: "Máximo" })).toHaveProperty("max", "8000");

@@ -270,11 +270,6 @@ export function CatalogPage({
         <h1 className="mt-4 font-serif text-4xl font-medium tracking-[-0.03em] text-ink sm:text-5xl">
           Produtos
         </h1>
-        <p className="mt-3 text-sm text-muted">
-          {state.status === "ready"
-            ? `${resultCount} ${resultCount === 1 ? "produto encontrado" : "produtos encontrados"}${fullPrice ? "" : " nesta página"}`
-            : "Catálogo da GuliX"}
-        </p>
 
         <div className="mt-8 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start lg:gap-8 xl:gap-10">
           <aside className={filtersOpen ? "fixed inset-0 z-40 lg:static" : "hidden lg:block"}>
@@ -329,12 +324,12 @@ export function CatalogPage({
                 Filtros
               </button>
               <div className="ml-auto flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-row">
-                <label className="min-w-0 text-xs text-muted">
+                <label className="flex min-w-0 flex-col gap-3 text-xs text-muted">
                   Ordenar
                   <select
                     value={sort}
                     onChange={(event) => updateParams({ ordem: event.target.value }, true)}
-                    className="mt-1 h-11 w-full rounded-lg border border-line bg-paper px-3 text-sm text-ink sm:w-44"
+                    className="h-11 w-full rounded-lg border border-line bg-paper px-3 text-sm text-ink sm:w-44"
                   >
                     {SORT_OPTIONS.map((option) => (
                       <option key={option.id} value={option.id}>
@@ -343,12 +338,12 @@ export function CatalogPage({
                     ))}
                   </select>
                 </label>
-                <label className="min-w-0 text-xs text-muted">
+                <label className="flex min-w-0 flex-col gap-3 text-xs text-muted">
                   Por página
                   <select
                     value={String(size)}
                     onChange={(event) => updateParams({ tamanho: event.target.value }, true)}
-                    className="mt-1 h-11 w-full rounded-lg border border-line bg-paper px-3 text-sm text-ink sm:w-36"
+                    className="h-11 w-full rounded-lg border border-line bg-paper px-3 text-sm text-ink sm:w-36"
                   >
                     {PAGE_SIZES.map((option) => (
                       <option key={option} value={option}>
@@ -380,11 +375,14 @@ export function CatalogPage({
             ) : null}
 
             {state.status === "ready" && soldByGulix ? (
-              <nav aria-label="Paginação" className="mt-8 flex flex-wrap items-center justify-between gap-3">
+              <nav
+                aria-label="Paginação"
+                className="mt-8 flex flex-col gap-3 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:gap-4"
+              >
                 <p className="text-sm text-muted">
                   Página {Math.min(page, Math.max(totalPages, 1))} de {Math.max(totalPages, 1)}
                 </p>
-                <div className="flex gap-2">
+                <div className="flex justify-center gap-2">
                   <button
                     type="button"
                     className="min-h-11 rounded-lg border border-line px-4 text-sm font-medium text-ink disabled:text-muted"
@@ -402,6 +400,10 @@ export function CatalogPage({
                     Próxima
                   </button>
                 </div>
+                <p className="text-right text-sm text-muted">
+                  {resultCount} {resultCount === 1 ? "produto encontrado" : "produtos encontrados"}
+                  {fullPrice ? "" : " nesta página"}
+                </p>
               </nav>
             ) : null}
           </div>
