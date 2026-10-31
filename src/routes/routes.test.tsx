@@ -35,6 +35,24 @@ describe("roteamento", () => {
     expect(screen.queryByText("Até 12x sem juros / Curadoria própria")).toBeNull();
   });
 
+  it("leva Explorar produtos ao catálogo sem filtros e Ver ofertas até a seleção da casa", async () => {
+    const user = userEvent.setup();
+    const router = createMemoryRouter(appRoutes, { initialEntries: ["/"] });
+    render(<RouterProvider router={router} />);
+
+    const offers = screen.getByRole("link", { name: "Ver ofertas" });
+    expect(offers.getAttribute("href")).toBe("#selecao-da-casa");
+    expect(document.getElementById("selecao-da-casa")?.textContent).toContain("Seleção da casa");
+    expect(document.getElementById("selecao-da-casa")?.className).toContain("scroll-mt-24");
+
+    await user.click(screen.getByRole("link", { name: "Explorar produtos" }));
+
+    expect(router.state.location.pathname).toBe("/produtos");
+    expect(router.state.location.search).toBe("");
+    expect(screen.getByRole("checkbox", { name: "GuliX" })).toHaveProperty("checked", true);
+    expect(screen.queryByRole("button", { name: /^Remover / })).toBeNull();
+  });
+
   it("esconde a faixa de anúncio no catálogo", () => {
     renderAt("/produtos");
 

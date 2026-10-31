@@ -15,7 +15,7 @@ export function FeaturedProducts() {
   return (
     <section id="produtos" className="scroll-mt-24 py-12 sm:py-16" aria-labelledby="titulo-produtos">
       <Container>
-        <p className="flex items-center gap-3 text-[11px] font-semibold tracking-[0.18em] text-brand uppercase">
+        <p id="selecao-da-casa" className="flex scroll-mt-24 items-center gap-3 text-[11px] font-semibold tracking-[0.18em] text-brand uppercase">
           <span className="h-px w-8 bg-brand" />
           Seleção da casa
         </p>
