@@ -127,7 +127,17 @@ describe("navegue", () => {
     expect(router.state.location.pathname).toBe("/produtos");
     expect(router.state.location.search).toBe("?categoria=44");
     expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "auto" });
-    expect(scrollTo.mock.calls.some((call) => call[0]?.behavior === "smooth")).toBe(false);
+    expect(
+      scrollTo.mock.calls.some((call) => {
+        const options: unknown = call[0];
+        return (
+          typeof options === "object" &&
+          options !== null &&
+          "behavior" in options &&
+          options.behavior === "smooth"
+        );
+      }),
+    ).toBe(false);
     expect(await screen.findByRole("checkbox", { name: "Processador" })).toHaveProperty("checked", true);
     expect(screen.getByRole("heading", { name: "Processador da categoria" })).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "Placa de vídeo da categoria" })).toBeNull();
