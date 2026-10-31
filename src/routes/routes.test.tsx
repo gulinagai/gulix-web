@@ -30,8 +30,9 @@ describe("roteamento", () => {
       expect(screen.getByRole("heading", { name })).toBeTruthy();
     }
     expect(screen.getByRole("heading", { name: "Produtos em destaque" })).toBeTruthy();
-    expect(screen.getByText("Frete especial em produtos selecionados")).toBeTruthy();
-    expect(screen.getByText("Até 12x sem juros / Curadoria própria")).toBeTruthy();
+    expect(screen.getByText("Parcele sua compra em até 12x sem juros.")).toBeTruthy();
+    expect(screen.queryByText("Frete especial em produtos selecionados")).toBeNull();
+    expect(screen.queryByText("Até 12x sem juros / Curadoria própria")).toBeNull();
   });
 
   it("esconde a faixa de anúncio no catálogo", () => {
@@ -47,6 +48,7 @@ describe("roteamento", () => {
     renderAt("/endereco-inexistente");
 
     expect(screen.getByRole("heading", { name: "Página não encontrada" })).toBeTruthy();
+    expect(screen.getByText("Frete especial em produtos selecionados")).toBeTruthy();
     expect(screen.queryByRole("heading", { name: /build your legacy/i })).toBeNull();
 
     await user.click(screen.getByRole("link", { name: "Voltar ao início" }));
