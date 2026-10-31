@@ -107,7 +107,7 @@ export function FeaturedProducts({
           <ul className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4 lg:gap-x-5">
             {state.products.map((product) => (
               <li key={product.id}>
-                <ProductCard product={product} />
+                <ProductCard product={product} imageHover />
               </li>
             ))}
           </ul>

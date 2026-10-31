@@ -4,23 +4,33 @@ import { useState } from "react";
 
 type ProductCardProps = {
   product: Product;
+  imageHover?: boolean;
 };
 
-export function ProductCard({ product }: ProductCardProps) {
+const imageMotion =
+  "transition duration-500 group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:group-hover:scale-100";
+
+export function ProductCard({ product, imageHover = false }: ProductCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
     <article className="min-w-0">
-      <div className="relative overflow-hidden rounded-2xl bg-paper shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]">
+      <div
+        className={`relative overflow-hidden rounded-2xl bg-paper shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)] ${
+          imageHover
+            ? "group border-2 border-transparent transition duration-300 hover:border-brand motion-reduce:transition-none"
+            : ""
+        }`}
+      >
         {product.image && !imageFailed ? (
           <img
             src={product.image}
             alt=""
-            className="aspect-square w-full object-cover"
+            className={`aspect-square w-full object-cover ${imageHover ? imageMotion : ""}`}
             onError={() => setImageFailed(true)}
           />
         ) : (
-          <div className="aspect-square w-full bg-shelf" />
+          <div className={`aspect-square w-full bg-shelf ${imageHover ? imageMotion : ""}`} />
         )}
         {product.badge ? (
           <span className="absolute top-3 left-3 rounded-md bg-action px-2 py-1 text-[11px] font-semibold tracking-wide text-white">
